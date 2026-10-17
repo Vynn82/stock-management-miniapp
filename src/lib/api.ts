@@ -276,6 +276,7 @@ export const api = {
       variantId?: string | null;
       quantity: number;
     }[];
+    deliveryAddress?: string;
     remark?: string;
   }): Promise<CustomerOrder> {
     return request<CustomerOrder>('customer-orders', {

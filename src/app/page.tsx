@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Search,
-  ShoppingCart,
+  ShoppingBag,
   Clock,
   Sparkles,
   Banknote,
@@ -13,6 +13,9 @@ import {
   Plus,
   Check,
   Building2,
+  ShieldCheck,
+  Truck,
+  ArrowRight,
 } from "lucide-react";
 import { useTelegram } from "@/context/telegram-context";
 import { useCart } from "@/context/cart-context";
@@ -27,7 +30,7 @@ export default function HomePage() {
     openRegistration,
     hapticFeedback,
   } = useTelegram();
-  const { addToCart } = useCart();
+  const { addToCart, totalCount } = useCart();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
@@ -71,152 +74,216 @@ export default function HomePage() {
       image: product.image,
     });
     setAddedId(product.id);
-    setTimeout(() => setAddedId(null), 1200);
+    setTimeout(() => setAddedId(null), 1400);
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-6">
-      {/* Header & Greeting */}
-      <header className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-5 rounded-b-2xl shadow-sm">
-        <div className="flex justify-between items-center mb-3">
-          <div>
+    <div className="flex flex-col min-h-screen bg-[#fbfbfd] text-[#1d1d1f] pb-24">
+      {/* Apple-style Flagship Hero Showcase */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#0b0c10] via-[#141622] to-[#1d2238] text-white pt-6 pb-7 px-5 rounded-b-[2rem] shadow-xl">
+        {/* Ambient Glow Orbs */}
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-blue-600/25 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 space-y-4">
+          {/* Top Row: Brand & Cart */}
+          <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span className="text-xs uppercase tracking-wider text-blue-200 font-semibold">
+              <span className="text-[10px] tracking-widest uppercase font-extrabold px-2.5 py-0.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-blue-300">
                 Partner Store
               </span>
-              {authStatus === "ACTIVE" && (
-                <span className="bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  Active
+              {authStatus === "ACTIVE" ? (
+                <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Verified
+                </span>
+              ) : null}
+            </div>
+
+            <Link
+              href="/cart"
+              className="relative p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 active:scale-95 transition-all duration-300 ease-out flex items-center justify-center"
+              aria-label="View Cart"
+            >
+              <ShoppingBag className="w-5 h-5 text-white" />
+              {totalCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-[10px] font-extrabold rounded-full min-w-4 h-4 px-1 flex items-center justify-center shadow-lg animate-in zoom-in-75">
+                  {totalCount > 99 ? "99+" : totalCount}
                 </span>
               )}
-            </div>
-            <h1 className="text-xl font-bold flex items-center gap-1.5 mt-0.5">
-              Welcome, {customer?.firstName || telegramUser?.firstName || "Partner"} 👋
+            </Link>
+          </div>
+
+          {/* User Welcome */}
+          <div>
+            <h1 className="text-2xl font-black tracking-tight text-white/95">
+              Welcome, {customer?.firstName || telegramUser?.firstName || "Partner"}
             </h1>
             {customer?.companyName ? (
-              <p className="text-xs text-blue-100 flex items-center gap-1 mt-0.5">
-                🏢 {customer.companyName}
+              <p className="text-xs text-neutral-300 font-medium flex items-center gap-1.5 mt-1">
+                <Building2 className="w-3.5 h-3.5 text-blue-400" />
+                {customer.companyName}
               </p>
             ) : authStatus === "REGISTRATION_REQUIRED" ? (
               <button
                 type="button"
                 onClick={openRegistration}
-                className="inline-flex items-center gap-1 text-[11px] text-blue-100 bg-white/20 hover:bg-white/30 px-2 py-0.5 rounded-md mt-1 transition-colors font-medium text-left"
+                className="inline-flex items-center gap-1.5 text-xs text-blue-300 bg-white/10 hover:bg-white/15 px-3 py-1 rounded-xl mt-1.5 transition-all font-semibold border border-white/10"
               >
-                Register as Partner →
+                Complete Partner Registration <ChevronRight className="w-3.5 h-3.5" />
               </button>
             ) : null}
           </div>
-          <Link
-            href="/cart"
-            className="bg-white/15 hover:bg-white/25 p-2.5 rounded-full transition-colors relative"
-          >
-            <ShoppingCart className="w-5 h-5 text-white" />
-          </Link>
-        </div>
 
-        {/* Search Input */}
-        <div className="relative mt-2">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && searchQuery.trim()) {
-                window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
-              }
-            }}
-            className="w-full pl-10 pr-4 py-2.5 bg-white text-gray-900 rounded-xl text-sm shadow-sm outline-none placeholder:text-gray-400 focus:ring-2 focus:ring-blue-300"
-          />
-          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-3.5" />
-        </div>
-      </header>
-
-      <div className="px-4 space-y-5 mt-4">
-        {/* Auth Status Notification Banners for Unregistered / Pending / Rejected */}
-        {authStatus === "REGISTRATION_REQUIRED" && (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3 shadow-xs">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
-              <Building2 className="w-5 h-5" />
+          {/* Apple Glass Search Bar */}
+          <div className="relative pt-1">
+            <div className="relative flex items-center">
+              <Search className="w-4 h-4 text-neutral-400 absolute left-4 pointer-events-none transition-colors" />
+              <input
+                type="text"
+                placeholder="Search products, SKUs, or codes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchQuery.trim()) {
+                    window.location.href = `/products?search=${encodeURIComponent(searchQuery)}`;
+                  }
+                }}
+                className="w-full pl-11 pr-4 py-3 bg-white/10 hover:bg-white/15 focus:bg-white focus:text-neutral-900 focus:placeholder:text-neutral-400 placeholder:text-neutral-400 text-white text-xs font-medium rounded-2xl backdrop-blur-xl border border-white/15 outline-none focus:ring-4 focus:ring-blue-500/20 shadow-inner transition-all duration-300 ease-out"
+              />
             </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-xs text-blue-950">
-                Browse Live Catalog • Register to Order
-              </h3>
-              <p className="text-[11px] text-blue-800 mt-0.5 leading-relaxed">
-                You can browse products freely. To place wholesale and retail orders for delivery, please register your partner business.
-              </p>
-              <button
-                type="button"
-                onClick={openRegistration}
-                className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-xs transition-colors"
-              >
-                Register as Partner <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content Body */}
+      <div className="px-4 space-y-6 mt-5">
+        {/* Unregistered Callout */}
+        {authStatus === "REGISTRATION_REQUIRED" && (
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white p-5 shadow-lg shadow-blue-500/10">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
+                <Building2 className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <span className="text-[10px] tracking-wider uppercase font-bold text-blue-200 block">
+                  Partner Access
+                </span>
+                <h3 className="font-bold text-sm text-white mt-0.5">
+                  Register to Unlock Ordering
+                </h3>
+                <p className="text-xs text-blue-100/90 mt-1 leading-relaxed">
+                  Browse products freely. Complete your partner company profile to order wholesale with delivery.
+                </p>
+                <button
+                  type="button"
+                  onClick={openRegistration}
+                  className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 bg-white text-blue-700 hover:bg-blue-50 text-xs font-bold rounded-xl shadow-md active:scale-95 transition-all"
+                >
+                  Register Partner Account <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         )}
 
+        {/* Feature Highlights Strip (Apple / Samsung Trust Pills) */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-white rounded-2xl p-2.5 border border-neutral-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)] text-center flex flex-col items-center justify-center gap-1">
+            <Truck className="w-4 h-4 text-blue-600" />
+            <span className="text-[11px] font-bold text-neutral-800 leading-tight">Direct Dispatch</span>
+            <span className="text-[9px] text-neutral-400">Fast delivery</span>
+          </div>
 
+          <div className="bg-white rounded-2xl p-2.5 border border-neutral-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)] text-center flex flex-col items-center justify-center gap-1">
+            <Banknote className="w-4 h-4 text-emerald-600" />
+            <span className="text-[11px] font-bold text-neutral-800 leading-tight">Cash On Delivery</span>
+            <span className="text-[9px] text-neutral-400">Pay on arrival</span>
+          </div>
 
-        {/* Cash On Delivery Notification Banner */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-start gap-3 text-amber-900">
-          <Banknote className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div className="text-xs">
-            <span className="font-semibold block">💵 Cash on Delivery</span>
-            Manual cash payment is collected by staff when your items are
-            delivered.
+          <div className="bg-white rounded-2xl p-2.5 border border-neutral-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.02)] text-center flex flex-col items-center justify-center gap-1">
+            <ShieldCheck className="w-4 h-4 text-indigo-600" />
+            <span className="text-[11px] font-bold text-neutral-800 leading-tight">Verified Stock</span>
+            <span className="text-[9px] text-neutral-400">Authentic goods</span>
           </div>
         </div>
 
-        {/* Recent Order Status Alert (If exists) */}
+        {/* Recent Order Card (Apple Wallet Style) */}
         {recentOrder && (
-          <Link
-            href={`/orders/${recentOrder.id}`}
-            className="block bg-white border border-blue-100 rounded-xl p-3.5 shadow-sm hover:border-blue-300 transition-colors"
-          >
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-600" />
-                <span className="text-xs font-semibold text-gray-800">
-                  Order #{recentOrder.orderNo}
+          <div>
+            <div className="flex justify-between items-center mb-2 px-1">
+              <h2 className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
+                Active Order
+              </h2>
+              <Link
+                href="/orders"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+              >
+                All Orders →
+              </Link>
+            </div>
+            <Link
+              href={`/orders/${recentOrder.id}`}
+              className="block bg-white rounded-2xl border border-neutral-200/80 p-4 shadow-[0_4px_16px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-blue-300 transition-all duration-300 ease-out active:scale-[0.99]"
+            >
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-extrabold text-neutral-900 block">
+                      Order #{recentOrder.orderNo}
+                    </span>
+                    <span className="text-[10px] text-neutral-400">
+                      {new Date(recentOrder.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                <span className="text-[10px] font-extrabold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-200/60">
+                  {recentOrder.status.replace(/_/g, " ")}
                 </span>
               </div>
-              <span className="text-[11px] font-medium px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">
-                {recentOrder.status.replace(/_/g, " ")}
-              </span>
-            </div>
-            <div className="mt-1 flex justify-between items-center text-xs text-gray-500">
-              <span>
-                {recentOrder.items?.length || 0} items &bull; $
-                {Number(recentOrder.totalAmount).toFixed(2)}
-              </span>
-              <span className="text-blue-600 flex items-center gap-0.5 font-medium">
-                Track <ChevronRight className="w-3.5 h-3.5" />
-              </span>
-            </div>
-          </Link>
+
+              <div className="mt-3 pt-2.5 border-t border-neutral-100 flex justify-between items-center text-xs">
+                <span className="text-neutral-500 font-medium">
+                  {recentOrder.items?.length || 0} items &bull; ${Number(recentOrder.totalAmount).toFixed(2)}
+                </span>
+                <span className="text-blue-600 font-bold flex items-center gap-0.5 text-xs">
+                  Track Delivery <ChevronRight className="w-3.5 h-3.5" />
+                </span>
+              </div>
+            </Link>
+          </div>
         )}
 
-        {/* Categories Bar */}
+        {/* Categories Horizontal Carousel */}
         {categories.length > 0 && (
           <div>
-            <div className="flex justify-between items-center mb-2.5">
-              <h2 className="text-sm font-bold text-gray-900">Categories</h2>
+            <div className="flex justify-between items-center mb-2.5 px-1">
+              <h2 className="text-sm font-extrabold text-neutral-900 tracking-tight">
+                Categories
+              </h2>
               <Link
                 href="/products"
                 className="text-xs text-blue-600 font-semibold hover:underline"
               >
-                See all
+                View all
               </Link>
             </div>
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+              <Link
+                href="/products"
+                className="bg-neutral-900 text-white px-4 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap shadow-sm shrink-0 active:scale-95 transition-transform"
+              >
+                All Catalog
+              </Link>
               {categories.map((cat) => (
                 <Link
                   key={cat.id}
                   href={`/products?categoryId=${cat.id}`}
-                  className="bg-white border border-gray-200 px-3.5 py-1.5 rounded-full text-xs font-medium text-gray-700 whitespace-nowrap hover:bg-blue-50 hover:border-blue-300 transition-colors shrink-0"
+                  className="bg-white border border-neutral-200/90 px-4 py-2 rounded-2xl text-xs font-semibold text-neutral-700 whitespace-nowrap hover:bg-neutral-50 hover:border-neutral-300 shadow-[0_2px_8px_rgba(0,0,0,0.02)] shrink-0 active:scale-95 transition-all"
                 >
                   {cat.name}
                 </Link>
@@ -225,100 +292,108 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Featured Products Grid */}
+        {/* Featured Products Section */}
         <div>
-          <div className="flex justify-between items-center mb-3">
-            <h2 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-500" /> Featured Products
-            </h2>
+          <div className="flex justify-between items-baseline mb-3 px-1">
+            <div>
+              <h2 className="text-base font-black text-neutral-900 tracking-tight flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-amber-500" /> Featured Highlights
+              </h2>
+              <p className="text-[11px] text-neutral-400 mt-0.5">Top-rated items in live inventory</p>
+            </div>
             <Link
               href="/products"
               className="text-xs text-blue-600 font-semibold hover:underline"
             >
-              View catalog
+              Browse all
             </Link>
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3.5">
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-xl p-3 border border-gray-100 animate-pulse h-48"
+                  className="bg-white rounded-3xl p-3 border border-neutral-200/70 h-56 flex flex-col justify-between animate-shimmer"
                 />
               ))}
             </div>
           ) : featuredProducts.length === 0 ? (
-            <div className="bg-white rounded-xl p-6 text-center text-gray-500 text-xs border border-gray-200">
+            <div className="bg-white rounded-3xl p-8 text-center text-neutral-500 text-xs border border-neutral-200">
               No products found in catalog.
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3.5">
               {featuredProducts.map((product) => {
                 const isJustAdded = addedId === product.id;
+                const inStock = (product.totalStock ?? 1) > 0;
+
                 return (
                   <Link
                     key={product.id}
                     href={`/products/${product.id}`}
-                    className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow transition-shadow flex flex-col justify-between"
+                    className="group bg-white rounded-3xl border border-neutral-200/80 p-3 shadow-[0_4px_16px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_28px_rgba(0,0,0,0.07)] hover:-translate-y-1 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col justify-between"
                   >
                     <div>
-                      <div className="h-32 bg-gray-100 relative overflow-hidden flex items-center justify-center">
+                      {/* Product Image Frame */}
+                      <div className="h-36 bg-gradient-to-b from-neutral-50 to-neutral-100/70 rounded-2xl relative overflow-hidden flex items-center justify-center p-3">
                         {product.image ? (
                           <img
                             src={product.image}
                             alt={product.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 ease-out"
                           />
                         ) : (
-                          <Package className="w-10 h-10 text-gray-300" />
+                          <Package className="w-10 h-10 text-neutral-300" />
                         )}
-                        {product.totalStock !== undefined && (
+
+                        {/* Stock Badge */}
+                        <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold backdrop-blur-md bg-white/85 shadow-xs">
                           <span
-                            className={`absolute top-2 left-2 text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                              product.totalStock > 0
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-red-100 text-red-800"
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              inStock ? "bg-emerald-500 animate-pulse" : "bg-red-500"
                             }`}
-                          >
-                            {product.totalStock > 0
-                              ? `Stock: ${product.totalStock}`
-                              : "Out of stock"}
+                          />
+                          <span className={inStock ? "text-neutral-700" : "text-red-700"}>
+                            {inStock ? "In Stock" : "Out"}
                           </span>
-                        )}
+                        </div>
                       </div>
 
-                      <div className="p-3">
-                        <h3 className="font-semibold text-xs text-gray-800 line-clamp-1">
+                      {/* Product Details */}
+                      <div className="pt-2.5 px-1">
+                        <span className="text-[10px] text-neutral-400 font-mono tracking-tight block">
+                          {product.code}
+                        </span>
+                        <h3 className="font-bold text-xs text-neutral-900 tracking-tight line-clamp-1 group-hover:text-blue-600 transition-colors mt-0.5">
                           {product.name}
                         </h3>
-                        <p className="text-[11px] text-gray-400 mt-0.5">
-                          Code: {product.code}
-                        </p>
                       </div>
                     </div>
 
-                    <div className="px-3 pb-3 pt-0 flex justify-between items-center">
-                      <span className="font-bold text-sm text-gray-900">
-                        ${Number(product.price).toFixed(2)}
-                      </span>
+                    {/* Price & Action Row */}
+                    <div className="pt-3 px-1 flex justify-between items-center">
+                      <div>
+                        <span className="text-[10px] text-neutral-400 block -mb-0.5">Wholesale</span>
+                        <span className="font-black text-sm text-neutral-900 tracking-tight">
+                          ${Number(product.price).toFixed(2)}
+                        </span>
+                      </div>
+
                       <button
                         type="button"
                         onClick={(e) => handleQuickAdd(product, e)}
-                        className={`text-xs px-2.5 py-1.5 rounded-lg font-semibold flex items-center gap-1 transition-all ${
+                        className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md active:scale-85 transition-all duration-300 ease-out ${
                           isJustAdded
-                            ? "bg-emerald-600 text-white"
-                            : "bg-blue-600 hover:bg-blue-700 text-white active:scale-95"
+                            ? "bg-emerald-600 text-white rotate-0"
+                            : "bg-neutral-900 hover:bg-blue-600 text-white"
                         }`}
+                        aria-label={`Add ${product.name} to cart`}
                       >
                         {isJustAdded ? (
-                          <>
-                            <Check className="w-3.5 h-3.5" /> Added
-                          </>
+                          <Check className="w-4 h-4 animate-in zoom-in-50" />
                         ) : (
-                          <>
-                            <Plus className="w-3.5 h-3.5" /> Add
-                          </>
+                          <Plus className="w-4 h-4" />
                         )}
                       </button>
                     </div>
@@ -329,19 +404,19 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Quick Access Action Bar */}
+        {/* Quick Dock Links */}
         <div className="grid grid-cols-2 gap-3 pt-2">
           <Link
-            href="/cart"
-            className="flex items-center justify-center gap-2 py-3 bg-blue-50 text-blue-700 rounded-xl font-semibold text-xs border border-blue-200"
+            href="/products"
+            className="flex items-center justify-center gap-2 py-3 px-4 bg-white hover:bg-neutral-50 text-neutral-800 rounded-2xl font-bold text-xs border border-neutral-200/80 shadow-xs active:scale-98 transition-all"
           >
-            <ShoppingCart className="w-4 h-4" /> Open Cart
+            <Package className="w-4 h-4 text-blue-600" /> Full Catalog
           </Link>
           <Link
             href="/orders"
-            className="flex items-center justify-center gap-2 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-semibold text-xs border border-indigo-200"
+            className="flex items-center justify-center gap-2 py-3 px-4 bg-white hover:bg-neutral-50 text-neutral-800 rounded-2xl font-bold text-xs border border-neutral-200/80 shadow-xs active:scale-98 transition-all"
           >
-            <Clock className="w-4 h-4" /> My Orders
+            <Clock className="w-4 h-4 text-indigo-600" /> Order History
           </Link>
         </div>
       </div>

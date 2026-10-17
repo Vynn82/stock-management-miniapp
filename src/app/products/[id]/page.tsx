@@ -1,21 +1,22 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter, useParams } from "next/navigation";
 import {
   ArrowLeft,
-  ShoppingCart,
+  ShoppingBag,
   Package,
   Plus,
   Minus,
   Check,
   Banknote,
-} from 'lucide-react';
-import { useCart } from '@/context/cart-context';
-import { useTelegram } from '@/context/telegram-context';
-import { api } from '@/lib/api';
-import { Product, ProductVariant } from '@/types';
+  Truck,
+} from "lucide-react";
+import { useCart } from "@/context/cart-context";
+import { useTelegram } from "@/context/telegram-context";
+import { api } from "@/lib/api";
+import { Product, ProductVariant } from "@/types";
 
 export default function ProductDetailPage({
   params,
@@ -24,7 +25,7 @@ export default function ProductDetailPage({
 }) {
   const router = useRouter();
   const routeParams = useParams();
-  const productId = (params?.id || routeParams?.id || '') as string;
+  const productId = (params?.id || routeParams?.id || "") as string;
 
   const { addToCart, totalCount } = useCart();
   const { authStatus, openRegistration, hapticFeedback } = useTelegram();
@@ -44,7 +45,7 @@ export default function ProductDetailPage({
           setSelectedVariant(data.variants[0]);
         }
       } catch (err) {
-        console.error('Failed to load product:', err);
+        console.error("Failed to load product:", err);
       } finally {
         setLoading(false);
       }
@@ -55,21 +56,23 @@ export default function ProductDetailPage({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs text-gray-500">Loading product details...</p>
+      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-3">
+        <div className="w-9 h-9 border-3 border-neutral-900 border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs text-neutral-400 font-medium">Loading details...</p>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="p-8 text-center">
-        <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-        <h2 className="text-base font-bold text-gray-800">Product Not Found</h2>
+      <div className="p-8 text-center min-h-[60vh] flex flex-col items-center justify-center">
+        <div className="w-16 h-16 rounded-3xl bg-neutral-100 flex items-center justify-center mb-4">
+          <Package className="w-8 h-8 text-neutral-400" />
+        </div>
+        <h2 className="text-base font-bold text-neutral-800">Product Not Found</h2>
         <Link
           href="/products"
-          className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 px-4 py-2 rounded-xl"
+          className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-neutral-900 px-5 py-2.5 rounded-2xl shadow-sm transition-all"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Catalog
         </Link>
@@ -84,9 +87,10 @@ export default function ProductDetailPage({
   );
 
   const activeImage = selectedVariant?.image || product.image;
+  const inStock = (product.totalStock ?? 1) > 0;
 
   const handleAddToCart = () => {
-    hapticFeedback('success');
+    hapticFeedback("success");
     addToCart(
       {
         productId: product.id,
@@ -106,7 +110,7 @@ export default function ProductDetailPage({
 
   const handleOrderNow = () => {
     if (!product) return;
-    hapticFeedback('medium');
+    hapticFeedback("medium");
     addToCart(
       {
         productId: product.id,
@@ -120,80 +124,106 @@ export default function ProductDetailPage({
       quantity,
     );
 
-    if (authStatus === 'REGISTRATION_REQUIRED') {
+    if (authStatus === "REGISTRATION_REQUIRED") {
       openRegistration();
     } else {
-      router.push('/checkout');
+      router.push("/checkout");
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-24">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-3 flex justify-between items-center">
+    <div className="flex flex-col min-h-screen bg-[#fbfbfd] text-[#1d1d1f] pb-32">
+      {/* Apple-style Frosted Navbar */}
+      <header className="sticky top-0 z-40 backdrop-blur-2xl bg-white/85 border-b border-neutral-200/70 px-4 py-3 flex justify-between items-center shadow-xs">
         <button
           type="button"
           onClick={() => router.back()}
-          className="p-1.5 rounded-full hover:bg-gray-100 text-gray-700"
+          className="p-2 -ml-2 rounded-2xl hover:bg-neutral-100 text-neutral-700 active:scale-95 transition-all"
+          aria-label="Back"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <span className="text-xs font-bold text-gray-800 truncate max-w-[200px]">
+        <span className="text-xs font-extrabold text-neutral-900 truncate max-w-[220px]">
           {product.name}
         </span>
         <Link
           href="/cart"
-          className="p-1.5 rounded-full hover:bg-gray-100 text-gray-700 relative"
+          className="p-2 -mr-2 rounded-2xl hover:bg-neutral-100 text-neutral-700 relative active:scale-95 transition-all"
+          aria-label="Cart"
         >
-          <ShoppingCart className="w-5 h-5" />
+          <ShoppingBag className="w-5 h-5" />
           {totalCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+            <span className="absolute 1 -top-0.5 -right-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[9px] font-black rounded-full min-w-4 h-4 px-1 flex items-center justify-center shadow-md animate-in zoom-in-75">
               {totalCount}
             </span>
           )}
         </Link>
       </header>
 
-      {/* Main Image */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="h-64 relative flex items-center justify-center bg-gray-50">
+      {/* Main Image Showcase Stage */}
+      <div className="bg-gradient-to-b from-white to-neutral-100/60 border-b border-neutral-200/60 p-6 flex items-center justify-center">
+        <div className="w-full max-w-[280px] h-64 relative flex items-center justify-center">
           {activeImage ? (
             <img
               src={activeImage}
               alt={product.name}
-              className="w-full h-full object-contain p-4"
+              className="w-full h-full object-contain filter drop-shadow-md animate-in fade-in duration-300"
             />
           ) : (
-            <Package className="w-16 h-16 text-gray-300" />
+            <Package className="w-20 h-20 text-neutral-300" />
           )}
+
+          {/* Floating Stock Badge */}
+          <div className="absolute top-0 left-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold backdrop-blur-md bg-white/90 shadow-xs border border-neutral-200/50">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                inStock ? "bg-emerald-500 animate-pulse" : "bg-red-500"
+              }`}
+            />
+            <span className={inStock ? "text-neutral-800" : "text-red-700"}>
+              {inStock ? "In Stock" : "Out of Stock"}
+            </span>
+          </div>
         </div>
       </div>
 
       <div className="p-4 space-y-4">
-        {/* Title & Price */}
-        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
+        {/* Title, Code & Price Card */}
+        <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-2">
           <div className="flex justify-between items-start gap-3">
             <div>
-              <span className="text-[11px] font-semibold text-blue-600 tracking-wide uppercase">
-                {product.category?.name || 'General Product'}
+              <span className="text-[10px] font-bold text-blue-600 tracking-wider uppercase">
+                {product.category?.name || "Catalog Product"}
               </span>
-              <h1 className="text-lg font-bold text-gray-900 mt-0.5">{product.name}</h1>
-              <p className="text-xs text-gray-400 mt-0.5">Code: {product.code}</p>
+              <h1 className="text-lg font-black tracking-tight text-neutral-900 mt-0.5">
+                {product.name}
+              </h1>
+              <p className="text-xs text-neutral-400 font-mono mt-0.5">
+                Code: {product.code}
+              </p>
             </div>
-            <div className="text-right">
-              <span className="text-xl font-extrabold text-blue-600">
+            <div className="text-right shrink-0">
+              <span className="text-[10px] text-neutral-400 block -mb-0.5">
+                Wholesale Price
+              </span>
+              <span className="text-xl font-black text-blue-600 tracking-tight">
                 ${activePrice.toFixed(2)}
               </span>
-              <span className="block text-[10px] text-gray-400">per unit</span>
             </div>
           </div>
+
+          {product.description && (
+            <p className="text-xs text-neutral-600 leading-relaxed pt-2 border-t border-neutral-100">
+              {product.description}
+            </p>
+          )}
         </div>
 
-        {/* Variants Selector (If product has variants) */}
+        {/* Variants Selector */}
         {product.variants && product.variants.length > 0 && (
-          <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
-            <label className="text-xs font-bold text-gray-800 block mb-2">
-              Select Variant:
+          <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-2">
+            <label className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase block">
+              Choose Variant ({product.variants.length} available)
             </label>
             <div className="flex flex-wrap gap-2">
               {product.variants.map((v) => {
@@ -203,18 +233,22 @@ export default function ProductDetailPage({
                     key={v.id}
                     type="button"
                     onClick={() => {
-                      hapticFeedback('light');
+                      hapticFeedback("light");
                       setSelectedVariant(v);
                     }}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold border transition-all text-left ${
+                    className={`px-3.5 py-2.5 rounded-2xl text-xs font-semibold border transition-all text-left active:scale-95 ${
                       isSelected
-                        ? 'border-blue-600 bg-blue-50 text-blue-700 ring-2 ring-blue-200'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                        ? "border-neutral-900 bg-neutral-900 text-white shadow-sm"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
                     }`}
                   >
                     <span>{v.name}</span>
                     {v.price && (
-                      <span className="block text-[10px] text-gray-500 font-normal">
+                      <span
+                        className={`block text-[10px] font-normal ${
+                          isSelected ? "text-neutral-300" : "text-neutral-400"
+                        }`}
+                      >
                         ${Number(v.price).toFixed(2)}
                       </span>
                     )}
@@ -225,55 +259,75 @@ export default function ProductDetailPage({
           </div>
         )}
 
-        {/* Quantity Stepper */}
-        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex justify-between items-center">
-          <span className="text-xs font-bold text-gray-800">Order Quantity</span>
-          <div className="flex items-center gap-3">
+        {/* Quantity Stepper Card */}
+        <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex justify-between items-center">
+          <div>
+            <span className="text-xs font-extrabold text-neutral-900 block">
+              Order Quantity
+            </span>
+            <span className="text-[11px] text-neutral-400">
+              Total: ${(activePrice * quantity).toFixed(2)}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 bg-neutral-100 border border-neutral-200/60 rounded-xl p-1 shadow-inner">
             <button
               type="button"
               onClick={() => {
-                hapticFeedback('light');
+                hapticFeedback("light");
                 setQuantity((q) => Math.max(1, q - 1));
               }}
-              className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 active:scale-95"
+              className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
+              aria-label="Decrease quantity"
             >
-              <Minus className="w-4 h-4" />
+              <Minus className="w-3.5 h-3.5" />
             </button>
-            <span className="w-8 text-center font-bold text-sm text-gray-800">
+            <span className="w-8 text-center font-bold text-xs text-neutral-900 font-mono">
               {quantity}
             </span>
             <button
               type="button"
               onClick={() => {
-                hapticFeedback('light');
+                hapticFeedback("light");
                 setQuantity((q) => q + 1);
               }}
-              className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 active:scale-95"
+              className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
+              aria-label="Increase quantity"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        {/* Cash Notice */}
-        <div className="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-3.5 flex items-start gap-2.5 text-blue-900 text-xs">
-          <Banknote className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-semibold block">Payment on Delivery</span>
-            No advance online payment required. Pay by cash when delivered.
+        {/* Dispatch & COD Guarantee */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="bg-neutral-50/80 border border-neutral-200/70 p-3 rounded-2xl flex items-center gap-2.5">
+            <Truck className="w-4 h-4 text-blue-600 shrink-0" />
+            <div className="text-[11px] leading-tight">
+              <span className="font-bold text-neutral-800 block">Direct Dispatch</span>
+              <span className="text-neutral-400 text-[10px]">Staff coordinates delivery</span>
+            </div>
+          </div>
+
+          <div className="bg-neutral-50/80 border border-neutral-200/70 p-3 rounded-2xl flex items-center gap-2.5">
+            <Banknote className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="text-[11px] leading-tight">
+              <span className="font-bold text-neutral-800 block">Cash on Delivery</span>
+              <span className="text-neutral-400 text-[10px]">Zero online payment</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Sticky Bottom Actions */}
-      <div className="fixed bottom-14 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 p-3 z-40 flex items-center gap-2">
+      <div className="fixed bottom-14 left-0 right-0 max-w-md mx-auto backdrop-blur-2xl bg-white/90 border-t border-neutral-200/80 p-3.5 z-40 flex items-center gap-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]">
         <button
           type="button"
           onClick={handleAddToCart}
-          className={`flex-1 py-3 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-98 ${
+          className={`flex-1 py-3 px-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 ${
             added
-              ? 'bg-emerald-600 text-white'
-              : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200'
+              ? "bg-emerald-600 text-white"
+              : "bg-neutral-100 hover:bg-neutral-200 text-neutral-900 border border-neutral-200/80"
           }`}
         >
           {added ? (
@@ -282,7 +336,7 @@ export default function ProductDetailPage({
             </>
           ) : (
             <>
-              <ShoppingCart className="w-4 h-4" /> Add to Cart
+              <ShoppingBag className="w-4 h-4" /> Add to Cart
             </>
           )}
         </button>
@@ -290,10 +344,10 @@ export default function ProductDetailPage({
         <button
           type="button"
           onClick={handleOrderNow}
-          className="flex-1 py-3 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-md active:scale-98"
+          className="flex-1 py-3 px-3 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 bg-neutral-900 hover:bg-blue-600 text-white transition-all shadow-lg active:scale-95"
         >
           <span>Order Now</span>
-          <span className="font-extrabold text-white/90">
+          <span className="font-mono text-white/90">
             (${(activePrice * quantity).toFixed(2)})
           </span>
         </button>
