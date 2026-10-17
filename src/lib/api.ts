@@ -7,25 +7,17 @@ import {
 } from '@/types';
 
 export function getApiBaseUrl(): string {
+  // In the browser, always route through the Next.js same-origin rewrite proxy (/api-backend).
+  // This completely eliminates "Not allowed by CORS" and HTTPS Mixed Content blocks.
   if (typeof window !== 'undefined') {
-    const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    // If the frontend is loaded over HTTPS, any HTTP URL will be blocked by Mixed Content policy.
-    // Use the Next.js rewrite proxy (/api-backend) to ensure safe, same-origin HTTPS requests.
-    if (window.location.protocol === 'https:' && envUrl.startsWith('http://')) {
-      return '/api-backend';
-    }
-    if (envUrl.startsWith('/')) {
-      return envUrl;
-    }
-    if (!envUrl) {
-      return '/api-backend';
-    }
-    return envUrl;
+    return '/api-backend';
   }
+  // Server-side (Node.js / SSR)
   return (
     process.env.BACKEND_API_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    'http://54.151.147.75:3000'
+    (process.env.NEXT_PUBLIC_API_URL && !process.env.NEXT_PUBLIC_API_URL.startsWith('/')
+      ? process.env.NEXT_PUBLIC_API_URL
+      : 'http://54.151.147.75:3000')
   );
 }
 
