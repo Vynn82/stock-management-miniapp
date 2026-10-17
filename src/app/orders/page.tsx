@@ -77,10 +77,11 @@ function getStatusBadge(status: CustomerOrderStatus) {
 }
 
 export default function MyOrdersPage() {
-  const { authStatus, isReady } = useTelegram();
+  const { authStatus, authError, refreshAuth, isReady } = useTelegram();
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterTab, setFilterTab] = useState<"ALL" | "ACTIVE" | "DONE">("ALL");
+  const [retrying, setRetrying] = useState(false);
 
   useEffect(() => {
     async function loadOrders() {
@@ -161,6 +162,33 @@ export default function MyOrdersPage() {
                 className="bg-white rounded-2xl p-4 border border-gray-200 animate-pulse h-28"
               />
             ))}
+          </div>
+        ) : authError && !authStatus ? (
+          <div className="bg-white rounded-2xl border border-red-200 p-8 text-center mt-4">
+            <div className="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+            <h3 className="text-sm font-bold text-gray-900">
+              Connection to Server Failed
+            </h3>
+            <p className="text-xs text-red-600 mt-1 max-w-xs mx-auto mb-5 leading-relaxed">
+              {authError}
+            </p>
+            <button
+              type="button"
+              disabled={retrying}
+              onClick={async () => {
+                setRetrying(true);
+                try {
+                  await refreshAuth();
+                } finally {
+                  setRetrying(false);
+                }
+              }}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-blue-700 transition-colors max-w-xs mx-auto"
+            >
+              {retrying ? "Reconnecting..." : "Retry Connection"}
+            </button>
           </div>
         ) : authStatus === "REGISTRATION_REQUIRED" ? (
           <div className="bg-white rounded-2xl border border-gray-200 p-8 text-center mt-4">

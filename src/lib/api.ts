@@ -6,7 +6,28 @@ import {
   Product,
 } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const envUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    // If the frontend is loaded over HTTPS, any HTTP URL will be blocked by Mixed Content policy.
+    // Use the Next.js rewrite proxy (/api-backend) to ensure safe, same-origin HTTPS requests.
+    if (window.location.protocol === 'https:' && envUrl.startsWith('http://')) {
+      return '/api-backend';
+    }
+    if (envUrl.startsWith('/')) {
+      return envUrl;
+    }
+    if (!envUrl) {
+      return '/api-backend';
+    }
+    return envUrl;
+  }
+  return (
+    process.env.BACKEND_API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    'http://54.151.147.75:3000'
+  );
+}
 
 function getAuthHeader(): Record<string, string> {
   if (typeof window === 'undefined') return {};
@@ -21,7 +42,8 @@ async function request<T>(
   endpoint: string,
   options: RequestInit = {},
 ): Promise<T> {
-  const url = `${API_BASE_URL.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',

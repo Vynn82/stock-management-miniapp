@@ -24,6 +24,7 @@ interface TelegramUser {
 interface TelegramContextValue {
   isReady: boolean;
   authStatus: CustomerAuthStatus | null;
+  authError: string | null;
   isAuthenticated: boolean;
   customer: CustomerProfile | null;
   telegramUser: TelegramUser | null;
@@ -54,6 +55,7 @@ interface TelegramContextValue {
 const TelegramContext = createContext<TelegramContextValue>({
   isReady: false,
   authStatus: null,
+  authError: null,
   isAuthenticated: false,
   customer: null,
   telegramUser: null,
@@ -91,6 +93,7 @@ declare global {
 export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const [isReady, setIsReady] = useState(false);
   const [authStatus, setAuthStatus] = useState<CustomerAuthStatus | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [customer, setCustomer] = useState<CustomerProfile | null>(null);
   const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
@@ -145,6 +148,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   const handleAuthResponse = useCallback((authRes: CustomerAuthResponse) => {
     setAuthStatus(authRes.status);
     setStatusMessage(authRes.message || null);
+    setAuthError(null);
 
     if (authRes.status === "ACTIVE") {
       if (authRes.accessToken) {
@@ -181,11 +185,14 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
 
   const refreshAuth = useCallback(async () => {
     if (!initData) return;
+    setAuthError(null);
     try {
       const authRes = await api.authenticateTelegram(initData);
       handleAuthResponse(authRes);
-    } catch (err) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to connect to authentication server";
       console.error("Refresh auth error:", err);
+      setAuthError(msg);
     }
   }, [initData, handleAuthResponse]);
 
@@ -244,8 +251,10 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
         // Authenticate with backend API
         const authRes = await api.authenticateTelegram(rawInitData);
         handleAuthResponse(authRes);
-      } catch (err) {
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Failed to connect to authentication server";
         console.error("Telegram authentication error:", err);
+        setAuthError(msg);
       } finally {
         setIsReady(true);
       }
@@ -259,6 +268,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
       value={{
         isReady,
         authStatus,
+        authError,
         isAuthenticated,
         customer,
         telegramUser,

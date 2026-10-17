@@ -34,6 +34,7 @@ export function AuthGate({
   const {
     isReady,
     authStatus,
+    authError,
     customer,
     telegramUser,
     statusMessage,
@@ -398,12 +399,62 @@ export function AuthGate({
     );
   }
 
+  // 8. Error / Connection Failure Screen
+  if (authError) {
+    return (
+      <div className="flex flex-col min-h-screen bg-gray-50 p-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 max-w-md w-full mx-auto my-auto text-center">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-100">
+            <AlertTriangle className="w-8 h-8" />
+          </div>
+
+          <span className="inline-block bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full mb-2">
+            Connection Error
+          </span>
+
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
+            Unable to Connect
+          </h2>
+
+          <p className="text-xs text-gray-600 leading-relaxed mb-6">
+            {authError ||
+              'Could not establish a secure connection to the stock management server. Please check your internet connection and try again.'}
+          </p>
+
+          <div className="space-y-2">
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors shadow-sm"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`}
+              />
+              {isRefreshing ? 'Reconnecting...' : 'Retry Connection'}
+            </button>
+
+            {showBackToStore && (
+              <Link
+                href="/products"
+                className="block w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors text-center"
+              >
+                Browse Catalog Anyway
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Fallback if status is unknown or pending check
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-gray-50">
       <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4" />
       <h2 className="text-lg font-bold text-gray-800">Verifying Status...</h2>
-      <p className="text-sm text-gray-500 mt-1">{statusMessage || 'Loading your account'}</p>
+      <p className="text-sm text-gray-500 mt-1">
+        {statusMessage || 'Loading your account'}
+      </p>
     </div>
   );
 }
