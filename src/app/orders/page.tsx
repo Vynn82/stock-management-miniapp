@@ -205,13 +205,13 @@ export default function MyOrdersPage() {
             <div className="flex flex-col gap-2 max-w-xs mx-auto">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-3 min-h-[44px] bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 text-white rounded-2xl text-xs font-bold shadow-md active:scale-95 transition-all"
               >
                 Register as Partner <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link
                 href="/products"
-                className="text-xs text-gray-500 hover:text-gray-800 py-1"
+                className="text-xs text-neutral-500 hover:text-neutral-900 py-1"
               >
                 Browse Catalog First
               </Link>
@@ -232,13 +232,13 @@ export default function MyOrdersPage() {
             <div className="flex flex-col gap-2 max-w-xs mx-auto">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-amber-500 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-amber-600 transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-3 min-h-[44px] bg-amber-500 text-white rounded-2xl text-xs font-bold shadow-xs hover:bg-amber-600 active:scale-95 transition-all"
               >
                 View Registration Status <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link
                 href="/products"
-                className="text-xs text-gray-500 hover:text-gray-800 py-1"
+                className="text-xs text-neutral-500 hover:text-neutral-900 py-1"
               >
                 Browse Catalog
               </Link>
@@ -258,25 +258,25 @@ export default function MyOrdersPage() {
             </p>
             <Link
               href="/register"
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-red-600 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-red-700 transition-colors max-w-xs mx-auto"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-3 min-h-[44px] bg-red-600 text-white rounded-2xl text-xs font-bold shadow-xs hover:bg-red-700 active:scale-95 transition-all max-w-xs mx-auto"
             >
               Review Application <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         ) : filteredOrders.length === 0 ? (
-          <div className="bg-white rounded-2xl p-10 text-center border border-gray-200 mt-6">
-            <ShoppingBag className="w-10 h-10 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-gray-700">
+          <div className="bg-white rounded-3xl p-10 text-center border border-neutral-200 mt-6 shadow-xs">
+            <ShoppingBag className="w-10 h-10 text-neutral-300 mx-auto mb-2" />
+            <p className="text-sm font-bold text-neutral-800">
               No orders found
             </p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-neutral-400 mt-1">
               You haven&apos;t placed any orders yet.
             </p>
             <Link
               href="/products"
-              className="mt-4 inline-flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold"
+              className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-neutral-950 to-neutral-800 text-white rounded-2xl text-xs font-bold shadow-sm active:scale-95 transition-all"
             >
-              Start Ordering
+              Start Ordering <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         ) : (

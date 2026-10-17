@@ -217,7 +217,54 @@ export const api = {
       commune?: string | null;
     }>
   > {
-    return request(`customer-auth/location/search?query=${encodeURIComponent(query)}`);
+    const trimmed = query.trim();
+    if (!trimmed) return [];
+
+    const hasCountryContext = /(cambodia|khmer|phnom penh|kandal|siem reap|battambang|kampot|sihanoukville)/i.test(
+      trimmed,
+    );
+
+    // 1. If no Cambodia context is typed, query with Cambodia suffix first to ensure local places match
+    if (!hasCountryContext) {
+      try {
+        const biased = await request<
+          Array<{
+            displayName: string;
+            latitude: number;
+            longitude: number;
+            province?: string | null;
+            district?: string | null;
+            commune?: string | null;
+          }>
+        >(
+          `customer-auth/location/search?query=${encodeURIComponent(trimmed + ", Cambodia")}`,
+        );
+        if (Array.isArray(biased) && biased.length > 0) {
+          return biased;
+        }
+      } catch (err) {
+        console.warn("Biased location search failed, trying raw query:", err);
+      }
+    }
+
+    // 2. Fall back to raw query
+    try {
+      const results = await request<
+        Array<{
+          displayName: string;
+          latitude: number;
+          longitude: number;
+          province?: string | null;
+          district?: string | null;
+          commune?: string | null;
+        }>
+      >(`customer-auth/location/search?query=${encodeURIComponent(trimmed)}`);
+
+      return Array.isArray(results) ? results : [];
+    } catch (err) {
+      console.warn("Location search error:", err);
+      return [];
+    }
   },
 
   // Catalog

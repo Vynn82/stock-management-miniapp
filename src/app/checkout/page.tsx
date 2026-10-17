@@ -12,13 +12,13 @@ import {
   MapPin,
   Navigation,
   Edit3,
-  Package,
 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useTelegram } from "@/context/telegram-context";
 import { api } from "@/lib/api";
 import { AuthGate } from "@/components/auth-gate";
 import { LocationMapPicker } from "@/components/location-map-picker";
+import { ProductImage } from "@/components/product-image";
 import { LocationData } from "@/types";
 
 function CheckoutContent() {
@@ -280,7 +280,7 @@ function CheckoutContent() {
                     setLocationType("CUSTOM");
                     setIsMapOpen(true);
                   }}
-                  className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  className="font-bold text-neutral-900 hover:text-blue-600 flex items-center gap-1.5 transition-colors"
                 >
                   <Edit3 className="w-3.5 h-3.5" /> Change for this order
                 </button>
@@ -289,15 +289,15 @@ function CheckoutContent() {
           ) : (
             /* Option B: Choose Different Location */
             <div className="space-y-3">
-              <div className="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-3.5 space-y-2.5">
+              <div className="bg-neutral-50/80 border border-neutral-200/80 rounded-2xl p-3.5 space-y-2.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-[11px] font-bold text-blue-900">
+                  <span className="text-[11px] font-bold text-neutral-900">
                     Custom Delivery Point
                   </span>
                   <button
                     type="button"
                     onClick={() => setIsMapOpen(true)}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-neutral-950 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all"
                   >
                     <MapPin className="w-3.5 h-3.5" />
                     {customAddress ? "Re-pin on Map" : "Select on Map"}
@@ -368,16 +368,12 @@ function CheckoutContent() {
                 className="py-3 flex items-center justify-between gap-3 text-xs"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded-xl bg-neutral-50 border border-neutral-100 overflow-hidden flex items-center justify-center shrink-0">
-                    {item.image ? (
-                      <img
-                        src={item.image}
-                        alt={item.productName}
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <Package className="w-5 h-5 text-neutral-300" />
-                    )}
+                  <div className="w-12 h-12 rounded-xl bg-neutral-50 border border-neutral-100 overflow-hidden flex items-center justify-center shrink-0 p-1">
+                    <ProductImage
+                      src={item.image}
+                      alt={item.productName}
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <div className="min-w-0">
                     <span className="font-bold text-neutral-900 block truncate">
@@ -463,13 +459,13 @@ function CheckoutContent() {
         )}
       </div>
 
-      {/* Floating Bottom Sticky Action */}
-      <div className="fixed bottom-14 left-0 right-0 max-w-md mx-auto backdrop-blur-2xl bg-white/90 border-t border-neutral-200/80 p-3.5 z-40 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]">
+      {/* Floating Bottom Sticky Action - positioned at bottom-0 since navbar is hidden */}
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto backdrop-blur-2xl bg-white/95 border-t border-neutral-200/80 p-4 pb-6 z-40 shadow-[0_-10px_35px_rgba(0,0,0,0.08)]">
         <button
           type="button"
           disabled={submitting}
           onClick={handlePlaceOrder}
-          className="w-full py-3.5 px-5 rounded-2xl font-black text-sm bg-neutral-900 hover:bg-blue-600 disabled:bg-neutral-400 text-white flex items-center justify-between shadow-xl active:scale-98 transition-all duration-300 ease-out"
+          className="w-full py-3.5 px-5 min-h-[50px] rounded-2xl font-black text-sm bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 disabled:from-neutral-400 disabled:to-neutral-400 text-white flex items-center justify-between shadow-xl active:scale-98 transition-all duration-300 ease-out"
         >
           {submitting ? (
             <span className="w-full flex items-center justify-center gap-2">

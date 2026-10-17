@@ -17,6 +17,7 @@ import { useCart } from "@/context/cart-context";
 import { useTelegram } from "@/context/telegram-context";
 import { api } from "@/lib/api";
 import { Product, ProductVariant } from "@/types";
+import { ProductImage } from "@/components/product-image";
 
 export default function ProductDetailPage({
   params,
@@ -132,7 +133,7 @@ export default function ProductDetailPage({
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#fbfbfd] text-[#1d1d1f] pb-32">
+    <div className="flex flex-col min-h-screen bg-[#fbfbfd] text-[#1d1d1f] pb-48">
       {/* Apple-style Frosted Navbar */}
       <header className="sticky top-0 z-40 backdrop-blur-2xl bg-white/85 border-b border-neutral-200/70 px-4 py-3 flex justify-between items-center shadow-xs">
         <button
@@ -163,15 +164,11 @@ export default function ProductDetailPage({
       {/* Main Image Showcase Stage */}
       <div className="bg-gradient-to-b from-white to-neutral-100/60 border-b border-neutral-200/60 p-6 flex items-center justify-center">
         <div className="w-full max-w-[280px] h-64 relative flex items-center justify-center">
-          {activeImage ? (
-            <img
-              src={activeImage}
-              alt={product.name}
-              className="w-full h-full object-contain filter drop-shadow-md animate-in fade-in duration-300"
-            />
-          ) : (
-            <Package className="w-20 h-20 text-neutral-300" />
-          )}
+          <ProductImage
+            src={activeImage}
+            alt={product.name}
+            className="w-full h-full object-contain filter drop-shadow-md animate-in fade-in duration-300"
+          />
 
           {/* Floating Stock Badge */}
           <div className="absolute top-0 left-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold backdrop-blur-md bg-white/90 shadow-xs border border-neutral-200/50">
@@ -319,38 +316,40 @@ export default function ProductDetailPage({
         </div>
       </div>
 
-      {/* Sticky Bottom Actions */}
-      <div className="fixed bottom-14 left-0 right-0 max-w-md mx-auto backdrop-blur-2xl bg-white/90 border-t border-neutral-200/80 p-3.5 z-40 flex items-center gap-2.5 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]">
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          className={`flex-1 py-3 px-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 ${
-            added
-              ? "bg-emerald-600 text-white"
-              : "bg-neutral-100 hover:bg-neutral-200 text-neutral-900 border border-neutral-200/80"
-          }`}
-        >
-          {added ? (
-            <>
-              <Check className="w-4 h-4" /> Added to Cart!
-            </>
-          ) : (
-            <>
-              <ShoppingBag className="w-4 h-4" /> Add to Cart
-            </>
-          )}
-        </button>
+      {/* Sticky Bottom Actions with clean clearance above Navigation Bar */}
+      <div className="fixed bottom-[4.75rem] left-0 right-0 max-w-md mx-auto px-4 z-40 pointer-events-none">
+        <div className="pointer-events-auto backdrop-blur-2xl bg-white/95 border border-neutral-200/80 rounded-2xl p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.12)] flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className={`flex-1 py-3 px-3 min-h-[46px] rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 ${
+              added
+                ? "bg-emerald-600 text-white"
+                : "bg-neutral-100 hover:bg-neutral-200 text-neutral-900 border border-neutral-200/80"
+            }`}
+          >
+            {added ? (
+              <>
+                <Check className="w-4 h-4" /> Added to Cart!
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-4 h-4" /> Add to Cart
+              </>
+            )}
+          </button>
 
-        <button
-          type="button"
-          onClick={handleOrderNow}
-          className="flex-1 py-3 px-3 rounded-2xl font-black text-xs flex items-center justify-center gap-1.5 bg-neutral-900 hover:bg-blue-600 text-white transition-all shadow-lg active:scale-95"
-        >
-          <span>Order Now</span>
-          <span className="font-mono text-white/90">
-            (${(activePrice * quantity).toFixed(2)})
-          </span>
-        </button>
+          <button
+            type="button"
+            onClick={handleOrderNow}
+            className="flex-1 py-3 px-3 min-h-[46px] rounded-xl font-black text-xs flex items-center justify-center gap-1.5 bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 text-white transition-all shadow-md active:scale-95"
+          >
+            <span>Order Now</span>
+            <span className="font-mono text-white/90">
+              (${(activePrice * quantity).toFixed(2)})
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );

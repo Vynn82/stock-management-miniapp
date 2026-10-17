@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -8,21 +8,19 @@ import {
   Plus,
   Minus,
   ArrowRight,
-  Package,
   ShoppingBag,
   Banknote,
-  FileText,
   UserPlus,
 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useTelegram } from "@/context/telegram-context";
+import { ProductImage } from "@/components/product-image";
 
 export default function CartPage() {
   const router = useRouter();
   const { items, updateQuantity, removeFromCart, totalAmount, totalCount } =
     useCart();
   const { authStatus, openRegistration, hapticFeedback } = useTelegram();
-  const [remark, setRemark] = useState("");
 
   if (items.length === 0) {
     return (
@@ -36,7 +34,7 @@ export default function CartPage() {
         </p>
         <Link
           href="/products"
-          className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 bg-neutral-900 hover:bg-blue-600 text-white rounded-2xl text-xs font-bold shadow-md active:scale-95 transition-all duration-300"
+          className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-2xl text-xs font-bold shadow-md active:scale-95 transition-all duration-300"
         >
           Explore Catalog <ArrowRight className="w-3.5 h-3.5" />
         </Link>
@@ -50,14 +48,11 @@ export default function CartPage() {
       openRegistration();
       return;
     }
-    if (remark.trim()) {
-      sessionStorage.setItem("tg_order_remark", remark.trim());
-    }
     router.push("/checkout");
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#fbfbfd] text-[#1d1d1f] pb-32">
+    <div className="flex flex-col min-h-screen bg-[#fbfbfd] text-[#1d1d1f] pb-48">
       {/* Apple-style Frosted Header */}
       <header className="sticky top-0 z-40 backdrop-blur-2xl bg-white/85 border-b border-neutral-200/70 px-4 py-3.5 flex justify-between items-center shadow-xs">
         <div>
@@ -83,15 +78,11 @@ export default function CartPage() {
             >
               {/* Product Thumbnail */}
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-neutral-50 to-neutral-100/70 border border-neutral-100 shrink-0 overflow-hidden flex items-center justify-center p-1.5">
-                {item.image ? (
-                  <img
-                    src={item.image}
-                    alt={item.productName}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <Package className="w-6 h-6 text-neutral-300" />
-                )}
+                <ProductImage
+                  src={item.image}
+                  alt={item.productName}
+                  className="w-full h-full object-contain"
+                />
               </div>
 
               {/* Details & Controls */}
@@ -113,7 +104,7 @@ export default function CartPage() {
                       hapticFeedback("light");
                       removeFromCart(item.productId, item.variantId);
                     }}
-                    className="text-neutral-400 hover:text-red-500 p-1 rounded-lg hover:bg-neutral-100 transition-colors"
+                    className="text-neutral-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-neutral-100 transition-colors"
                     aria-label="Remove item"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -137,7 +128,7 @@ export default function CartPage() {
                           item.quantity - 1,
                         );
                       }}
-                      className="w-6 h-6 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
+                      className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
                       aria-label="Decrease quantity"
                     >
                       <Minus className="w-3 h-3" />
@@ -155,7 +146,7 @@ export default function CartPage() {
                           item.quantity + 1,
                         );
                       }}
-                      className="w-6 h-6 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
+                      className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
                       aria-label="Increase quantity"
                     >
                       <Plus className="w-3 h-3" />
@@ -165,20 +156,6 @@ export default function CartPage() {
               </div>
             </div>
           ))}
-        </div>
-
-        {/* Order Remarks */}
-        <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
-          <label className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase flex items-center gap-1.5 mb-1.5">
-            <FileText className="w-3.5 h-3.5 text-blue-600" /> Delivery Instructions
-          </label>
-          <textarea
-            rows={2}
-            value={remark}
-            onChange={(e) => setRemark(e.target.value)}
-            placeholder="e.g. Please deliver to warehouse back entrance, Call upon arrival..."
-            className="w-full text-xs p-3 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 resize-none transition-all"
-          />
         </div>
 
         {/* Auth status notification if not registered */}
@@ -198,7 +175,7 @@ export default function CartPage() {
             <button
               type="button"
               onClick={openRegistration}
-              className="shrink-0 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all"
+              className="shrink-0 px-3.5 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all"
             >
               Register
             </button>
@@ -232,29 +209,31 @@ export default function CartPage() {
           </div>
           <div className="pt-2 border-t border-neutral-100 flex justify-between items-baseline">
             <span className="text-sm font-black text-neutral-900">Total Due</span>
-            <span className="text-xl font-black text-blue-600">
+            <span className="text-xl font-black text-neutral-900">
               ${totalAmount.toFixed(2)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Floating Sticky Checkout Action */}
-      <div className="fixed bottom-14 left-0 right-0 max-w-md mx-auto backdrop-blur-2xl bg-white/90 border-t border-neutral-200/80 p-3.5 z-40 shadow-[0_-8px_30px_rgba(0,0,0,0.06)]">
-        <button
-          type="button"
-          onClick={handleProceedToCheckout}
-          className="w-full py-3.5 px-5 rounded-2xl font-black text-sm bg-neutral-900 hover:bg-blue-600 text-white flex items-center justify-between shadow-xl active:scale-98 transition-all duration-300 ease-out"
-        >
-          <span>
-            {authStatus === "REGISTRATION_REQUIRED"
-              ? "Register & Place Order"
-              : "Proceed to Checkout"}
-          </span>
-          <span className="flex items-center gap-1.5 font-mono text-base font-extrabold">
-            ${totalAmount.toFixed(2)} <ArrowRight className="w-4 h-4" />
-          </span>
-        </button>
+      {/* Floating Sticky Checkout Action with clean clearance above Navigation Bar */}
+      <div className="fixed bottom-[4.75rem] left-0 right-0 max-w-md mx-auto px-4 z-40 pointer-events-none">
+        <div className="pointer-events-auto backdrop-blur-2xl bg-white/95 border border-neutral-200/80 rounded-2xl p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.12)]">
+          <button
+            type="button"
+            onClick={handleProceedToCheckout}
+            className="w-full py-3.5 px-5 min-h-[48px] rounded-xl font-black text-sm bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 text-white flex items-center justify-between shadow-md active:scale-98 transition-all duration-300 ease-out"
+          >
+            <span>
+              {authStatus === "REGISTRATION_REQUIRED"
+                ? "Register & Place Order"
+                : "Proceed to Checkout"}
+            </span>
+            <span className="flex items-center gap-1.5 font-mono text-base font-extrabold">
+              ${totalAmount.toFixed(2)} <ArrowRight className="w-4 h-4" />
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );

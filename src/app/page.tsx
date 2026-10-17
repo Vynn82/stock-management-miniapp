@@ -21,6 +21,7 @@ import { useTelegram } from "@/context/telegram-context";
 import { useCart } from "@/context/cart-context";
 import { api } from "@/lib/api";
 import { Category, CustomerOrder, Product } from "@/types";
+import { ProductImage } from "@/components/product-image";
 
 export default function HomePage() {
   const {
@@ -336,16 +337,12 @@ export default function HomePage() {
                   >
                     <div>
                       {/* Product Image Frame */}
-                      <div className="h-36 bg-gradient-to-b from-neutral-50 to-neutral-100/70 rounded-2xl relative overflow-hidden flex items-center justify-center p-3">
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 ease-out"
-                          />
-                        ) : (
-                          <Package className="w-10 h-10 text-neutral-300" />
-                        )}
+                      <div className="h-36 bg-gradient-to-b from-neutral-50 to-neutral-100/70 rounded-2xl relative overflow-hidden flex items-center justify-center p-2.5">
+                        <ProductImage
+                          src={product.image}
+                          alt={product.name}
+                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500 ease-out"
+                        />
 
                         {/* Stock Badge */}
                         <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold backdrop-blur-md bg-white/85 shadow-xs">
