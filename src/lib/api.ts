@@ -178,7 +178,7 @@ export const api = {
     companyName: string;
     contactName: string;
     phone: string;
-    address: string;
+    address?: string;
     latitude?: number | null;
     longitude?: number | null;
     province?: string | null;
@@ -192,7 +192,10 @@ export const api = {
   }> {
     return request('customer-auth/register', {
       method: 'POST',
-      body: JSON.stringify(dto),
+      body: JSON.stringify({
+        ...dto,
+        address: dto.address?.trim() || 'Phnom Penh, Cambodia',
+      }),
     });
   },
 

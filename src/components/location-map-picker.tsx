@@ -111,19 +111,16 @@ export function LocationMapPicker({
       const customIcon = L.divIcon({
         className: 'custom-map-picker-pin',
         html: `
-          <div style="position: relative; display: flex; flex-direction: column; align-items: center; transform: translate(-50%, -100%); pointer-events: auto;">
-            <div style="background-color: #0f172a; color: white; border-radius: 9999px; width: 34px; height: 34px; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35); border: 2.5px solid white; display: flex; align-items: center; justify-content: center; cursor: grab;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
-            </div>
-            <div style="width: 8px; height: 8px; background-color: #0f172a; transform: rotate(45deg); margin-top: -4px;"></div>
-            <div style="width: 14px; height: 4px; background-color: rgba(0,0,0,0.25); border-radius: 9999px; margin-top: 2px;"></div>
+          <div style="width: 34px; height: 44px; cursor: grab; filter: drop-shadow(0 3px 5px rgba(30, 64, 175, 0.26));">
+            <svg width="34" height="44" viewBox="0 0 48 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M24 2.5C12.2 2.5 2.75 11.95 2.75 23.75C2.75 38.1 24 55.5 24 55.5C24 55.5 45.25 38.1 45.25 23.75C45.25 11.95 35.8 2.5 24 2.5Z" fill="#2563EB" stroke="white" stroke-width="3.5" stroke-linejoin="round"/>
+              <circle cx="24" cy="23.5" r="8" fill="white"/>
+              <circle cx="24" cy="23.5" r="3.5" fill="#2563EB"/>
+            </svg>
           </div>
         `,
-        iconSize: [34, 40],
-        iconAnchor: [17, 40],
+        iconSize: [34, 44],
+        iconAnchor: [17, 44],
       });
 
       // Cleanup existing map if any
@@ -334,16 +331,16 @@ export function LocationMapPicker({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[90vh] max-h-[640px] border border-neutral-200/80">
         {/* Header */}
-        <div className="px-4 py-3.5 border-b border-neutral-800 flex items-center justify-between bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 text-white shrink-0">
+        <div className="px-4 py-3.5 border-b border-blue-500/30 flex items-center justify-between bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-600 text-white shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/15 text-white flex items-center justify-center shadow-xs">
+            <div className="w-8 h-8 rounded-xl bg-white/15 border border-white/20 text-white flex items-center justify-center shadow-xs">
               <MapPin className="w-4 h-4 text-white" />
             </div>
             <div>
               <h2 className="text-sm font-bold text-white leading-tight">
                 Select Delivery Location
               </h2>
-              <p className="text-[11px] text-neutral-300">
+              <p className="text-[11px] text-blue-100">
                 Drag pin or search any specific landmark in Cambodia
               </p>
             </div>
@@ -351,7 +348,7 @@ export function LocationMapPicker({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-neutral-300 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-full text-blue-100 hover:text-white hover:bg-white/15 transition-colors"
             aria-label="Close map"
           >
             <X className="w-4 h-4" />
@@ -368,7 +365,7 @@ export function LocationMapPicker({
                 placeholder="Search place, street, district, or landmark..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-8 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:bg-white transition-all"
+                className="w-full pl-9 pr-8 py-2 bg-neutral-50 border border-neutral-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
               />
               {isSearching ? (
                 <Loader2 className="w-3.5 h-3.5 text-neutral-500 animate-spin absolute right-2.5 top-2.5" />
@@ -390,7 +387,7 @@ export function LocationMapPicker({
             <button
               type="submit"
               disabled={isSearching || !searchQuery.trim()}
-              className="px-3.5 py-2 bg-gradient-to-r from-neutral-950 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 disabled:from-neutral-300 disabled:to-neutral-300 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors active:scale-95 shadow-xs"
+              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-neutral-300 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors active:scale-95 shadow-xs"
             >
               Search
             </button>
@@ -406,7 +403,7 @@ export function LocationMapPicker({
                 key={loc.name}
                 type="button"
                 onClick={() => handleSelectQuickLandmark(loc)}
-                className="px-2.5 py-1 bg-neutral-100 hover:bg-neutral-900 hover:text-white text-neutral-700 text-[11px] font-semibold rounded-xl shrink-0 whitespace-nowrap active:scale-95 transition-all shadow-2xs"
+                className="px-2.5 py-1 bg-neutral-100 hover:bg-blue-600 hover:text-white text-neutral-700 text-[11px] font-semibold rounded-xl shrink-0 whitespace-nowrap active:scale-95 transition-all shadow-2xs"
               >
                 {loc.name}
               </button>
@@ -421,9 +418,9 @@ export function LocationMapPicker({
                   key={idx}
                   type="button"
                   onClick={() => handleSelectSearchResult(res)}
-                  className="w-full text-left p-3 hover:bg-neutral-50 flex items-start gap-2.5 text-xs transition-colors group"
+                  className="w-full text-left p-3 hover:bg-blue-50 flex items-start gap-2.5 text-xs transition-colors group"
                 >
-                  <MapPin className="w-4 h-4 text-neutral-900 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
                   <div className="min-w-0">
                     <span className="text-neutral-900 font-semibold block line-clamp-1">
                       {res.displayName.split(',')[0]}
@@ -463,19 +460,19 @@ export function LocationMapPicker({
               onClick={handleLocateMe}
               disabled={isLocating}
               title="Use current GPS location"
-              className="w-9 h-9 bg-white/95 backdrop-blur-xs rounded-xl shadow-md border border-neutral-200 flex items-center justify-center text-neutral-700 hover:text-neutral-950 hover:bg-white active:scale-95 transition-all"
+              className="w-9 h-9 bg-white/95 backdrop-blur-xs rounded-xl shadow-md border border-neutral-200 flex items-center justify-center text-blue-600 hover:text-blue-700 hover:bg-white active:scale-95 transition-all"
             >
               {isLocating ? (
-                <Loader2 className="w-4 h-4 text-neutral-900 animate-spin" />
+                <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
               ) : (
-                <Navigation className="w-4 h-4 text-neutral-900" />
+                <Navigation className="w-4 h-4 text-blue-600" />
               )}
             </button>
             <button
               type="button"
               onClick={handleZoomIn}
               title="Zoom in"
-              className="w-9 h-9 bg-white/95 backdrop-blur-xs rounded-xl shadow-md border border-neutral-200 flex items-center justify-center text-neutral-700 hover:text-neutral-950 hover:bg-white active:scale-95 transition-all"
+              className="w-9 h-9 bg-white/95 backdrop-blur-xs rounded-xl shadow-md border border-neutral-200 flex items-center justify-center text-neutral-700 hover:text-blue-700 hover:bg-white active:scale-95 transition-all"
             >
               <ZoomIn className="w-4 h-4" />
             </button>
@@ -483,7 +480,7 @@ export function LocationMapPicker({
               type="button"
               onClick={handleZoomOut}
               title="Zoom out"
-              className="w-9 h-9 bg-white/95 backdrop-blur-xs rounded-xl shadow-md border border-neutral-200 flex items-center justify-center text-neutral-700 hover:text-neutral-950 hover:bg-white active:scale-95 transition-all"
+              className="w-9 h-9 bg-white/95 backdrop-blur-xs rounded-xl shadow-md border border-neutral-200 flex items-center justify-center text-neutral-700 hover:text-blue-700 hover:bg-white active:scale-95 transition-all"
             >
               <ZoomOut className="w-4 h-4" />
             </button>
@@ -491,8 +488,8 @@ export function LocationMapPicker({
 
           {/* Draggable notice pill */}
           <div className="absolute left-1/2 -translate-x-1/2 bottom-2.5 z-10 pointer-events-none">
-            <div className="bg-neutral-950/85 backdrop-blur-md text-white text-[10px] font-semibold px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 border border-white/10">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="bg-white/95 backdrop-blur-md text-blue-800 text-[10px] font-semibold px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 border border-blue-100">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
               Click map or drag pin to position
             </div>
           </div>
@@ -504,9 +501,9 @@ export function LocationMapPicker({
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <div className="text-[10px] uppercase font-black tracking-wider text-neutral-400 flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-neutral-900" />
+                  <MapPin className="w-3 h-3 text-blue-600" />
                   Selected Delivery Point
-                  {isGeocoding && <Loader2 className="w-2.5 h-2.5 text-neutral-900 animate-spin ml-1" />}
+                  {isGeocoding && <Loader2 className="w-2.5 h-2.5 text-blue-600 animate-spin ml-1" />}
                 </div>
                 <div className="text-xs font-bold text-neutral-900 line-clamp-2 mt-0.5">
                   {formattedAddress || 'Pinning location on map...'}
@@ -514,7 +511,7 @@ export function LocationMapPicker({
                 <div className="text-[10px] text-neutral-500 font-mono mt-0.5 flex flex-wrap gap-x-2">
                   <span>Lat: {currentLat.toFixed(6)}</span>
                   <span>Lng: {currentLng.toFixed(6)}</span>
-                  {province && <span className="text-neutral-900 font-sans font-semibold">({[commune, district, province].filter(Boolean).join(', ')})</span>}
+                  {province && <span className="text-blue-700 font-sans font-semibold">({[commune, district, province].filter(Boolean).join(', ')})</span>}
                 </div>
               </div>
             </div>
@@ -533,7 +530,7 @@ export function LocationMapPicker({
             <button
               type="button"
               onClick={handleConfirm}
-              className="flex-2 py-3 px-4 min-h-[44px] bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 text-white rounded-2xl text-xs font-black transition-all shadow-md flex items-center justify-center gap-1.5 active:scale-98"
+              className="flex-2 py-3 px-4 min-h-[44px] bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-black transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-1.5 active:scale-98"
             >
               <Check className="w-4 h-4" />
               Confirm Delivery Point

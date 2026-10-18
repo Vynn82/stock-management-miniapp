@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import {
   ArrowLeft,
-  ShoppingBag,
+  ShoppingCart,
   Package,
   Plus,
   Minus,
@@ -15,9 +15,11 @@ import {
 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useTelegram } from "@/context/telegram-context";
+import { useLanguage } from "@/context/language-context";
 import { api } from "@/lib/api";
 import { Product, ProductVariant } from "@/types";
 import { ProductImage } from "@/components/product-image";
+import { QuantityInput } from "@/components/quantity-input";
 
 export default function ProductDetailPage({
   params,
@@ -30,6 +32,7 @@ export default function ProductDetailPage({
 
   const { addToCart, totalCount } = useCart();
   const { authStatus, openRegistration, hapticFeedback } = useTelegram();
+  const { t } = useLanguage();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
@@ -58,8 +61,8 @@ export default function ProductDetailPage({
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[70vh] gap-3">
-        <div className="w-9 h-9 border-3 border-neutral-900 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs text-neutral-400 font-medium">Loading details...</p>
+        <div className="w-9 h-9 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs text-neutral-400 font-medium">{t("common_loading")}</p>
       </div>
     );
   }
@@ -73,9 +76,9 @@ export default function ProductDetailPage({
         <h2 className="text-base font-bold text-neutral-800">Product Not Found</h2>
         <Link
           href="/products"
-          className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-neutral-900 px-5 py-2.5 rounded-2xl shadow-sm transition-all"
+          className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 rounded-2xl shadow-sm shadow-blue-500/20 transition-all"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to Catalog
+          <ArrowLeft className="w-4 h-4" /> {t("checkout_return_catalog")}
         </Link>
       </div>
     );
@@ -88,7 +91,6 @@ export default function ProductDetailPage({
   );
 
   const activeImage = selectedVariant?.image || product.image;
-  const inStock = (product.totalStock ?? 1) > 0;
 
   const handleAddToCart = () => {
     hapticFeedback("success");
@@ -133,9 +135,9 @@ export default function ProductDetailPage({
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#fbfbfd] text-[#1d1d1f] pb-48">
+    <div className="flex flex-col min-h-screen bg-[#f5f5f7] text-[#1d1d1f] pb-32">
       {/* Apple-style Frosted Navbar */}
-      <header className="sticky top-0 z-40 backdrop-blur-2xl bg-white/85 border-b border-neutral-200/70 px-4 py-3 flex justify-between items-center shadow-xs">
+      <header className="sticky top-0 z-40 backdrop-blur-2xl bg-[#f5f5f7]/90 border-b border-neutral-200/70 px-4 py-3 flex justify-between items-center">
         <button
           type="button"
           onClick={() => router.back()}
@@ -152,7 +154,7 @@ export default function ProductDetailPage({
           className="p-2 -mr-2 rounded-2xl hover:bg-neutral-100 text-neutral-700 relative active:scale-95 transition-all"
           aria-label="Cart"
         >
-          <ShoppingBag className="w-5 h-5" />
+          <ShoppingCart className="w-5 h-5" />
           {totalCount > 0 && (
             <span className="absolute 1 -top-0.5 -right-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[9px] font-black rounded-full min-w-4 h-4 px-1 flex items-center justify-center shadow-md animate-in zoom-in-75">
               {totalCount}
@@ -162,55 +164,44 @@ export default function ProductDetailPage({
       </header>
 
       {/* Main Image Showcase Stage */}
-      <div className="bg-gradient-to-b from-white to-neutral-100/60 border-b border-neutral-200/60 p-6 flex items-center justify-center">
-        <div className="w-full max-w-[280px] h-64 relative flex items-center justify-center">
+      <div className="px-4 pt-4">
+        <div className="mx-auto w-full max-w-[520px] h-[340px] sm:h-[420px] relative flex items-center justify-center bg-white rounded-[2rem] border border-neutral-200/70 p-6 overflow-hidden">
           <ProductImage
             src={activeImage}
             alt={product.name}
-            className="w-full h-full object-contain filter drop-shadow-md animate-in fade-in duration-300"
+            className="w-full h-full object-contain animate-in fade-in duration-300"
           />
 
-          {/* Floating Stock Badge */}
-          <div className="absolute top-0 left-0 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold backdrop-blur-md bg-white/90 shadow-xs border border-neutral-200/50">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                inStock ? "bg-emerald-500 animate-pulse" : "bg-red-500"
-              }`}
-            />
-            <span className={inStock ? "text-neutral-800" : "text-red-700"}>
-              {inStock ? "In Stock" : "Out of Stock"}
-            </span>
-          </div>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4 space-y-4 max-w-2xl w-full mx-auto">
         {/* Title, Code & Price Card */}
-        <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-2">
+        <div className="bg-transparent px-1 py-2 space-y-3">
           <div className="flex justify-between items-start gap-3">
             <div>
-              <span className="text-[10px] font-bold text-blue-600 tracking-wider uppercase">
+              <span className="text-[10px] font-bold text-neutral-500 tracking-wider uppercase">
                 {product.category?.name || "Catalog Product"}
               </span>
-              <h1 className="text-lg font-black tracking-tight text-neutral-900 mt-0.5">
+              <h1 className="text-2xl font-black tracking-tight text-neutral-900 mt-1">
                 {product.name}
               </h1>
               <p className="text-xs text-neutral-400 font-mono mt-0.5">
-                Code: {product.code}
+                {t("detail_code")}: {product.code}
               </p>
             </div>
             <div className="text-right shrink-0">
-              <span className="text-[10px] text-neutral-400 block -mb-0.5">
-                Wholesale Price
+              <span className="text-[10px] text-neutral-400 block mb-0.5">
+                {t("home_wholesale")}
               </span>
-              <span className="text-xl font-black text-blue-600 tracking-tight">
+              <span className="text-2xl font-black text-neutral-900 tracking-tight">
                 ${activePrice.toFixed(2)}
               </span>
             </div>
           </div>
 
           {product.description && (
-            <p className="text-xs text-neutral-600 leading-relaxed pt-2 border-t border-neutral-100">
+            <p className="text-sm text-neutral-600 leading-relaxed pt-3 border-t border-neutral-200/70">
               {product.description}
             </p>
           )}
@@ -218,9 +209,9 @@ export default function ProductDetailPage({
 
         {/* Variants Selector */}
         {product.variants && product.variants.length > 0 && (
-          <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-2">
+          <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 space-y-3">
             <label className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase block">
-              Choose Variant ({product.variants.length} available)
+              {t("detail_choose_variant")} ({product.variants.length})
             </label>
             <div className="flex flex-wrap gap-2">
               {product.variants.map((v) => {
@@ -235,8 +226,8 @@ export default function ProductDetailPage({
                     }}
                     className={`px-3.5 py-2.5 rounded-2xl text-xs font-semibold border transition-all text-left active:scale-95 ${
                       isSelected
-                        ? "border-neutral-900 bg-neutral-900 text-white shadow-sm"
-                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
+                        ? "border-neutral-900 bg-neutral-900 text-white"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400"
                     }`}
                   >
                     <span>{v.name}</span>
@@ -257,10 +248,10 @@ export default function ProductDetailPage({
         )}
 
         {/* Quantity Stepper Card */}
-        <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex justify-between items-center">
+        <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 flex justify-between items-center">
           <div>
             <span className="text-xs font-extrabold text-neutral-900 block">
-              Order Quantity
+              {t("detail_quantity")}
             </span>
             <span className="text-[11px] text-neutral-400">
               Total: ${(activePrice * quantity).toFixed(2)}
@@ -279,9 +270,12 @@ export default function ProductDetailPage({
             >
               <Minus className="w-3.5 h-3.5" />
             </button>
-            <span className="w-8 text-center font-bold text-xs text-neutral-900 font-mono">
-              {quantity}
-            </span>
+            <QuantityInput
+              value={quantity}
+              onChange={setQuantity}
+              label={t("detail_quantity")}
+              className="w-16 h-8"
+            />
             <button
               type="button"
               onClick={() => {
@@ -296,29 +290,8 @@ export default function ProductDetailPage({
           </div>
         </div>
 
-        {/* Dispatch & COD Guarantee */}
-        <div className="grid grid-cols-2 gap-2.5">
-          <div className="bg-neutral-50/80 border border-neutral-200/70 p-3 rounded-2xl flex items-center gap-2.5">
-            <Truck className="w-4 h-4 text-blue-600 shrink-0" />
-            <div className="text-[11px] leading-tight">
-              <span className="font-bold text-neutral-800 block">Direct Dispatch</span>
-              <span className="text-neutral-400 text-[10px]">Staff coordinates delivery</span>
-            </div>
-          </div>
-
-          <div className="bg-neutral-50/80 border border-neutral-200/70 p-3 rounded-2xl flex items-center gap-2.5">
-            <Banknote className="w-4 h-4 text-emerald-600 shrink-0" />
-            <div className="text-[11px] leading-tight">
-              <span className="font-bold text-neutral-800 block">Cash on Delivery</span>
-              <span className="text-neutral-400 text-[10px]">Zero online payment</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sticky Bottom Actions with clean clearance above Navigation Bar */}
-      <div className="fixed bottom-[4.75rem] left-0 right-0 max-w-md mx-auto px-4 z-40 pointer-events-none">
-        <div className="pointer-events-auto backdrop-blur-2xl bg-white/95 border border-neutral-200/80 rounded-2xl p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.12)] flex items-center gap-2.5">
+        {/* Order Actions */}
+        <div className="bg-white border border-neutral-200/80 rounded-2xl p-2.5 flex items-center gap-2.5">
           <button
             type="button"
             onClick={handleAddToCart}
@@ -330,11 +303,11 @@ export default function ProductDetailPage({
           >
             {added ? (
               <>
-                <Check className="w-4 h-4" /> Added to Cart!
+                <Check className="w-4 h-4" /> {t("detail_added")}
               </>
             ) : (
               <>
-                <ShoppingBag className="w-4 h-4" /> Add to Cart
+                <ShoppingCart className="w-4 h-4" /> {t("detail_add_to_cart")}
               </>
             )}
           </button>
@@ -342,15 +315,35 @@ export default function ProductDetailPage({
           <button
             type="button"
             onClick={handleOrderNow}
-            className="flex-1 py-3 px-3 min-h-[46px] rounded-xl font-black text-xs flex items-center justify-center gap-1.5 bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 text-white transition-all shadow-md active:scale-95"
+            className="flex-1 py-3 px-3 min-h-[46px] rounded-xl font-black text-xs flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white transition-all active:scale-95"
           >
-            <span>Order Now</span>
+            <span>{t("detail_order_now")}</span>
             <span className="font-mono text-white/90">
               (${(activePrice * quantity).toFixed(2)})
             </span>
           </button>
         </div>
+
+        {/* Dispatch & COD Guarantee */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="bg-neutral-50/80 border border-neutral-200/70 p-3 rounded-2xl flex items-center gap-2.5">
+            <Truck className="w-4 h-4 text-blue-600 shrink-0" />
+            <div className="text-[11px] leading-tight">
+              <span className="font-bold text-neutral-800 block">{t("detail_direct_dispatch")}</span>
+              <span className="text-neutral-400 text-[10px]">{t("detail_direct_dispatch_desc")}</span>
+            </div>
+          </div>
+
+          <div className="bg-neutral-50/80 border border-neutral-200/70 p-3 rounded-2xl flex items-center gap-2.5">
+            <Banknote className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="text-[11px] leading-tight">
+              <span className="font-bold text-neutral-800 block">{t("detail_cod")}</span>
+              <span className="text-neutral-400 text-[10px]">{t("detail_cod_desc")}</span>
+            </div>
+          </div>
+        </div>
       </div>
+
     </div>
   );
 }

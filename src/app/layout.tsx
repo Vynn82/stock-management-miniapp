@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import localFont from "next/font/local";
 import "./globals.css";
+import { LanguageProvider } from "@/context/language-context";
 import { TelegramProvider } from "@/context/telegram-context";
 import { CartProvider } from "@/context/cart-context";
 import { NavigationBar } from "@/components/navigation-bar";
@@ -39,15 +40,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-100 text-gray-900 min-h-screen`}
       >
-        <TelegramProvider>
-          <CartProvider>
-            <main className="max-w-md mx-auto min-h-screen bg-white shadow-md flex flex-col pb-16 relative">
-              {children}
-              <NavigationBar />
-              <RegistrationModal />
-            </main>
-          </CartProvider>
-        </TelegramProvider>
+        <LanguageProvider>
+          <TelegramProvider>
+            <CartProvider>
+              <main className="max-w-md mx-auto min-h-screen bg-white shadow-md flex flex-col pb-16 relative">
+                {children}
+                <NavigationBar />
+                <RegistrationModal />
+              </main>
+            </CartProvider>
+          </TelegramProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

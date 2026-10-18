@@ -14,9 +14,9 @@ import {
   Send,
   CheckCircle2,
   ArrowLeft,
+  MapPin,
 } from 'lucide-react';
 import { useTelegram } from '@/context/telegram-context';
-import { LocationInputSection } from './location-input-section';
 
 export interface AuthGateProps {
   children: React.ReactNode;
@@ -48,12 +48,6 @@ export function AuthGate({
   const [companyName, setCompanyName] = useState('');
   const [contactName, setContactName] = useState('');
   const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
-  const [province, setProvince] = useState<string | null>(null);
-  const [district, setDistrict] = useState<string | null>(null);
-  const [commune, setCommune] = useState<string | null>(null);
   const [formInitialized, setFormInitialized] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -66,16 +60,6 @@ export function AuthGate({
         if (customer.companyName) setCompanyName(customer.companyName);
         if (customer.contactName) setContactName(customer.contactName);
         if (customer.phone) setPhone(customer.phone);
-        if (customer.address) setAddress(customer.address);
-        if (customer.latitude !== undefined && customer.latitude !== null) {
-          setLatitude(Number(customer.latitude));
-        }
-        if (customer.longitude !== undefined && customer.longitude !== null) {
-          setLongitude(Number(customer.longitude));
-        }
-        if (customer.province) setProvince(customer.province);
-        if (customer.district) setDistrict(customer.district);
-        if (customer.commune) setCommune(customer.commune);
         setFormInitialized(true);
       } else if (telegramUser) {
         const defaultContact = [telegramUser.firstName, telegramUser.lastName]
@@ -113,10 +97,6 @@ export function AuthGate({
       setErrorMsg('Please enter a valid phone number');
       return;
     }
-    if (!address.trim()) {
-      setErrorMsg('Please enter your primary delivery address');
-      return;
-    }
 
     setSubmitting(true);
     try {
@@ -124,12 +104,6 @@ export function AuthGate({
         companyName: companyName.trim(),
         contactName: contactName.trim(),
         phone: phone.trim(),
-        address: address.trim(),
-        latitude,
-        longitude,
-        province,
-        district,
-        commune,
       });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Registration failed. Please try again.';
@@ -266,37 +240,28 @@ export function AuthGate({
               </div>
             </div>
 
-            <LocationInputSection
-              address={address}
-              latitude={latitude}
-              longitude={longitude}
-              province={province}
-              district={district}
-              commune={commune}
-              onChange={(loc) => {
-                setAddress(loc.address);
-                setLatitude(loc.latitude);
-                setLongitude(loc.longitude);
-                setProvince(loc.province || null);
-                setDistrict(loc.district || null);
-                setCommune(loc.commune || null);
-              }}
-              required
-            />
+            {/* UX Information Banner */}
+            <div className="bg-neutral-50 border border-neutral-200/80 rounded-2xl p-3 flex items-start gap-2.5 text-xs text-neutral-600">
+              <MapPin className="w-4 h-4 text-neutral-900 shrink-0 mt-0.5" />
+              <p className="text-[11px] leading-relaxed">
+                <strong className="text-neutral-900 block font-bold">Fast Registration</strong>
+                No map pinning required now! You can set or change your delivery location anytime in <span className="font-semibold text-neutral-900">Settings</span> or during checkout.
+              </p>
+            </div>
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-300 text-white font-semibold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors shadow-sm mt-2"
+              className="w-full min-h-[46px] bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-700 hover:to-indigo-700 active:scale-98 disabled:from-neutral-400 disabled:to-neutral-400 text-white font-bold py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/25 mt-2"
             >
               {submitting ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Submitting...
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Submitting Registration...
                 </>
               ) : (
                 <>
-                  <Send className="w-4 h-4" />
+                  <Send className="w-3.5 h-3.5" />
                   Submit Registration
                 </>
               )}

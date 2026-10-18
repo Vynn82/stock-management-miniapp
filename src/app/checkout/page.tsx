@@ -8,13 +8,14 @@ import {
   Banknote,
   CheckCircle2,
   ShieldAlert,
-  ShoppingBag,
+  ShoppingCart,
   MapPin,
   Navigation,
   Edit3,
 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useTelegram } from "@/context/telegram-context";
+import { useLanguage } from "@/context/language-context";
 import { api } from "@/lib/api";
 import { AuthGate } from "@/components/auth-gate";
 import { LocationMapPicker } from "@/components/location-map-picker";
@@ -25,6 +26,7 @@ function CheckoutContent() {
   const router = useRouter();
   const { items, totalAmount, totalCount, clearCart } = useCart();
   const { customer, hapticFeedback } = useTelegram();
+  const { t } = useLanguage();
 
   // Delivery Location State
   // Follows registered customer by default
@@ -53,18 +55,18 @@ function CheckoutContent() {
   if (items.length === 0) {
     return (
       <div className="p-8 text-center min-h-[70vh] flex flex-col items-center justify-center">
-        <div className="w-16 h-16 rounded-3xl bg-neutral-100 flex items-center justify-center mb-4">
-          <ShoppingBag className="w-8 h-8 text-neutral-400" />
+        <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+          <ShoppingCart className="w-8 h-8" />
         </div>
-        <h2 className="text-lg font-bold text-neutral-900">Your Cart is Empty</h2>
+        <h2 className="text-lg font-bold text-neutral-900">{t("cart_empty_title")}</h2>
         <p className="text-xs text-neutral-500 mt-1 max-w-[240px]">
-          Add items from our catalog to proceed with checkout.
+          {t("cart_empty_subtitle")}
         </p>
         <Link
           href="/products"
-          className="mt-5 text-xs font-bold text-white bg-neutral-900 hover:bg-blue-600 px-5 py-2.5 rounded-2xl shadow-sm transition-all"
+          className="mt-5 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-5 py-2.5 rounded-2xl shadow-md shadow-blue-500/20 transition-all"
         >
-          Return to Catalog
+          {t("checkout_return_catalog")}
         </Link>
       </div>
     );
@@ -152,10 +154,10 @@ function CheckoutContent() {
         </button>
         <div className="text-center">
           <h1 className="text-sm font-black tracking-tight text-neutral-900">
-            Order Confirmation
+            {t("checkout_title")}
           </h1>
           <span className="text-[10px] text-neutral-400 font-medium">
-            Cash on Delivery Review
+            {t("checkout_subtitle")}
           </span>
         </div>
         <div className="w-8" />
@@ -204,7 +206,7 @@ function CheckoutContent() {
           <div className="flex justify-between items-center">
             <span className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase flex items-center gap-1">
               <MapPin className="w-3.5 h-3.5 text-blue-600" />
-              Delivery Location
+              {t("checkout_delivery_point")}
             </span>
 
             {/* Location Type Selector Pills */}
@@ -217,11 +219,11 @@ function CheckoutContent() {
                 }}
                 className={`px-2.5 py-1 rounded-lg transition-all ${
                   locationType === "REGISTERED"
-                    ? "bg-white text-neutral-900 shadow-xs"
+                    ? "bg-white text-blue-600 font-bold shadow-xs"
                     : "text-neutral-500 hover:text-neutral-900"
                 }`}
               >
-                Registered Address
+                {t("checkout_registered_address")}
               </button>
               <button
                 type="button"
@@ -234,11 +236,11 @@ function CheckoutContent() {
                 }}
                 className={`px-2.5 py-1 rounded-lg transition-all ${
                   locationType === "CUSTOM"
-                    ? "bg-white text-neutral-900 shadow-xs"
+                    ? "bg-white text-blue-600 font-bold shadow-xs"
                     : "text-neutral-500 hover:text-neutral-900"
                 }`}
               >
-                Different Location
+                {t("checkout_different_location")}
               </button>
             </div>
           </div>
@@ -250,12 +252,12 @@ function CheckoutContent() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-1.5">
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-700">
-                      Primary Profile Address
+                      {t("checkout_primary_profile_address")}
                     </span>
                     {customer?.latitude && customer?.longitude ? (
                       <span className="text-[10px] font-medium text-neutral-500 flex items-center gap-0.5 font-mono">
                         <Navigation className="w-3 h-3 text-blue-500" />
-                        Pinned
+                        {t("checkout_pinned")}
                       </span>
                     ) : null}
                   </div>
@@ -280,9 +282,9 @@ function CheckoutContent() {
                     setLocationType("CUSTOM");
                     setIsMapOpen(true);
                   }}
-                  className="font-bold text-neutral-900 hover:text-blue-600 flex items-center gap-1.5 transition-colors"
+                  className="font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors"
                 >
-                  <Edit3 className="w-3.5 h-3.5" /> Change for this order
+                  <Edit3 className="w-3.5 h-3.5" /> {t("checkout_change_order_location")}
                 </button>
               </div>
             </div>
@@ -292,15 +294,15 @@ function CheckoutContent() {
               <div className="bg-neutral-50/80 border border-neutral-200/80 rounded-2xl p-3.5 space-y-2.5">
                 <div className="flex justify-between items-center">
                   <span className="text-[11px] font-bold text-neutral-900">
-                    Custom Delivery Point
+                    {t("checkout_custom_delivery_point")}
                   </span>
                   <button
                     type="button"
                     onClick={() => setIsMapOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-neutral-950 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 active:scale-95 transition-all"
                   >
                     <MapPin className="w-3.5 h-3.5" />
-                    {customAddress ? "Re-pin on Map" : "Select on Map"}
+                    {customAddress ? t("checkout_repin_on_map") : t("checkout_select_on_map")}
                   </button>
                 </div>
 
@@ -465,17 +467,17 @@ function CheckoutContent() {
           type="button"
           disabled={submitting}
           onClick={handlePlaceOrder}
-          className="w-full py-3.5 px-5 min-h-[50px] rounded-2xl font-black text-sm bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 disabled:from-neutral-400 disabled:to-neutral-400 text-white flex items-center justify-between shadow-xl active:scale-98 transition-all duration-300 ease-out"
+          className="w-full py-3.5 px-5 min-h-[50px] rounded-2xl font-black text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-700 hover:to-indigo-700 disabled:from-neutral-400 disabled:to-neutral-400 text-white flex items-center justify-between shadow-xl shadow-blue-500/25 active:scale-98 transition-all duration-300 ease-out"
         >
           {submitting ? (
             <span className="w-full flex items-center justify-center gap-2">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Submitting Order...
+              {t("checkout_submitting")}
             </span>
           ) : (
             <>
               <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" /> Place Order
+                <CheckCircle2 className="w-4 h-4" /> {t("checkout_place_order")}
               </span>
               <span className="font-mono text-base font-extrabold">
                 ${totalAmount.toFixed(2)}

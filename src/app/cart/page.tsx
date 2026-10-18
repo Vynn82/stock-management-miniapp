@@ -8,35 +8,37 @@ import {
   Plus,
   Minus,
   ArrowRight,
-  ShoppingBag,
+  ShoppingCart,
   Banknote,
-  UserPlus,
 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useTelegram } from "@/context/telegram-context";
+import { useLanguage } from "@/context/language-context";
 import { ProductImage } from "@/components/product-image";
+import { QuantityInput } from "@/components/quantity-input";
 
 export default function CartPage() {
   const router = useRouter();
   const { items, updateQuantity, removeFromCart, totalAmount, totalCount } =
     useCart();
   const { authStatus, openRegistration, hapticFeedback } = useTelegram();
+  const { t } = useLanguage();
 
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[75vh] p-6 text-center">
-        <div className="w-16 h-16 rounded-3xl bg-neutral-100 flex items-center justify-center mb-4">
-          <ShoppingBag className="w-8 h-8 text-neutral-400" />
+        <div className="w-16 h-16 rounded-3xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+          <ShoppingCart className="w-8 h-8" />
         </div>
-        <h2 className="text-lg font-bold text-neutral-900">Your Cart is Empty</h2>
+        <h2 className="text-lg font-bold text-neutral-900">{t("cart_empty_title")}</h2>
         <p className="text-xs text-neutral-500 mt-1 max-w-[240px]">
-          Browse our partner catalog and add products you need to your order.
+          {t("cart_empty_subtitle")}
         </p>
         <Link
           href="/products"
-          className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white rounded-2xl text-xs font-bold shadow-md active:scale-95 transition-all duration-300"
+          className="mt-5 inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-bold shadow-md shadow-blue-500/20 active:scale-95 transition-all duration-300"
         >
-          Explore Catalog <ArrowRight className="w-3.5 h-3.5" />
+          {t("cart_explore_catalog")} <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>
     );
@@ -53,18 +55,18 @@ export default function CartPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#fbfbfd] text-[#1d1d1f] pb-48">
-      {/* Apple-style Frosted Header */}
+      {/* Frosted Header */}
       <header className="sticky top-0 z-40 backdrop-blur-2xl bg-white/85 border-b border-neutral-200/70 px-4 py-3.5 flex justify-between items-center shadow-xs">
         <div>
           <h1 className="text-base font-black tracking-tight text-neutral-900">
-            Shopping Cart
+            {t("cart_title")}
           </h1>
           <span className="text-[10px] text-neutral-400 font-medium">
-            Review partner order items
+            {t("cart_subtitle")}
           </span>
         </div>
         <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-neutral-100 text-neutral-700 border border-neutral-200/70">
-          {totalCount} {totalCount === 1 ? "item" : "items"}
+          {totalCount} {totalCount === 1 ? t("home_item") : t("home_items")}
         </span>
       </header>
 
@@ -94,7 +96,7 @@ export default function CartPage() {
                     </h3>
                     {item.variantName && (
                       <span className="text-[10px] text-blue-600 font-medium block">
-                        Variant: {item.variantName}
+                        {t("detail_choose_variant")}: {item.variantName}
                       </span>
                     )}
                   </div>
@@ -128,14 +130,19 @@ export default function CartPage() {
                           item.quantity - 1,
                         );
                       }}
-                      className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
+                      className="w-6 h-6 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
                       aria-label="Decrease quantity"
                     >
                       <Minus className="w-3 h-3" />
                     </button>
-                    <span className="text-xs font-bold text-neutral-900 px-1.5 min-w-[1.2rem] text-center font-mono">
-                      {item.quantity}
-                    </span>
+                    <QuantityInput
+                      value={item.quantity}
+                      onChange={(quantity) =>
+                        updateQuantity(item.productId, item.variantId, quantity)
+                      }
+                      label={`Quantity for ${item.productName}`}
+                      className="w-16 h-6"
+                    />
                     <button
                       type="button"
                       onClick={() => {
@@ -146,7 +153,7 @@ export default function CartPage() {
                           item.quantity + 1,
                         );
                       }}
-                      className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
+                      className="w-6 h-6 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
                       aria-label="Increase quantity"
                     >
                       <Plus className="w-3 h-3" />
@@ -158,39 +165,15 @@ export default function CartPage() {
           ))}
         </div>
 
-        {/* Auth status notification if not registered */}
-        {authStatus === "REGISTRATION_REQUIRED" && (
-          <div className="bg-blue-50/80 border border-blue-200 rounded-3xl p-4 flex items-start justify-between gap-3 text-xs">
-            <div className="flex items-start gap-2.5">
-              <UserPlus className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold text-blue-950 block">
-                  Partner Registration Required
-                </span>
-                <span className="text-[11px] text-blue-800 leading-relaxed">
-                  Complete your profile to unlock order placement and delivery tracking.
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={openRegistration}
-              className="shrink-0 px-3.5 py-2 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all"
-            >
-              Register
-            </button>
-          </div>
-        )}
-
         {/* Cash On Delivery Policy Card */}
         <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-300/60 rounded-3xl p-4 flex items-start gap-3 text-xs text-amber-950">
           <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
             <Banknote className="w-4 h-4" />
           </div>
           <div className="space-y-0.5">
-            <span className="font-bold text-xs block">Manual Cash on Delivery</span>
+            <span className="font-bold text-xs block">{t("cart_cod_notice_title")}</span>
             <p className="text-[11px] text-amber-900 leading-relaxed">
-              Payment is collected in cash when your goods are physically delivered to your location.
+              {t("cart_cod_notice_desc")}
             </p>
           </div>
         </div>
@@ -198,17 +181,17 @@ export default function CartPage() {
         {/* Receipt Pricing Card */}
         <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.02)] space-y-2">
           <div className="flex justify-between text-xs text-neutral-500">
-            <span>Items Subtotal</span>
+            <span>{t("cart_items_subtotal")}</span>
             <span className="font-semibold text-neutral-800">
               ${totalAmount.toFixed(2)}
             </span>
           </div>
           <div className="flex justify-between text-xs text-neutral-500">
-            <span>Payment Method</span>
-            <span className="font-semibold text-neutral-800">Cash on Delivery</span>
+            <span>{t("cart_payment_method")}</span>
+            <span className="font-semibold text-neutral-800">{t("cart_cod_label")}</span>
           </div>
           <div className="pt-2 border-t border-neutral-100 flex justify-between items-baseline">
-            <span className="text-sm font-black text-neutral-900">Total Due</span>
+            <span className="text-sm font-black text-neutral-900">{t("cart_total_due")}</span>
             <span className="text-xl font-black text-neutral-900">
               ${totalAmount.toFixed(2)}
             </span>
@@ -216,18 +199,18 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* Floating Sticky Checkout Action with clean clearance above Navigation Bar */}
+      {/* Floating Sticky Checkout Action */}
       <div className="fixed bottom-[4.75rem] left-0 right-0 max-w-md mx-auto px-4 z-40 pointer-events-none">
         <div className="pointer-events-auto backdrop-blur-2xl bg-white/95 border border-neutral-200/80 rounded-2xl p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.12)]">
           <button
             type="button"
             onClick={handleProceedToCheckout}
-            className="w-full py-3.5 px-5 min-h-[48px] rounded-xl font-black text-sm bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 text-white flex items-center justify-between shadow-md active:scale-98 transition-all duration-300 ease-out"
+            className="w-full py-3.5 px-5 min-h-[48px] rounded-xl font-black text-sm bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-700 hover:to-indigo-700 text-white flex items-center justify-between shadow-lg shadow-blue-500/25 active:scale-98 transition-all duration-300 ease-out"
           >
             <span>
               {authStatus === "REGISTRATION_REQUIRED"
-                ? "Register & Place Order"
-                : "Proceed to Checkout"}
+                ? t("cart_register_and_order")
+                : t("cart_proceed_checkout")}
             </span>
             <span className="flex items-center gap-1.5 font-mono text-base font-extrabold">
               ${totalAmount.toFixed(2)} <ArrowRight className="w-4 h-4" />

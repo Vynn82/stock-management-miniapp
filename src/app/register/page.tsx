@@ -104,12 +104,22 @@ function RegisterStatusPage() {
           </div>
         )}
 
-        <Link
-          href="/products"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 transition-colors shadow-sm"
-        >
-          Browse Products & Order <ArrowRight className="w-4 h-4" />
-        </Link>
+        <div className="space-y-2.5">
+          <Link
+            href="/settings"
+            className="w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-2 transition-all active:scale-98"
+          >
+            <MapPin className="w-4 h-4 text-neutral-900" />
+            Manage Delivery Location in Settings
+          </Link>
+
+          <Link
+            href="/products"
+            className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-2xl text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/25 active:scale-98"
+          >
+            Browse Catalog & Order <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
       </div>
     </div>
   );

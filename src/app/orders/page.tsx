@@ -5,14 +5,15 @@ import Link from "next/link";
 import {
   ChevronRight,
   AlertCircle,
-  ShoppingBag,
+  ReceiptText,
   Building2,
   ArrowRight,
-  Clock,
   AlertTriangle,
+  Clock,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useTelegram } from "@/context/telegram-context";
+import { useLanguage } from "@/context/language-context";
 import { CustomerOrder, CustomerOrderStatus } from "@/types";
 
 function getStatusBadge(status: CustomerOrderStatus) {
@@ -78,6 +79,7 @@ function getStatusBadge(status: CustomerOrderStatus) {
 
 export default function MyOrdersPage() {
   const { authStatus, authError, refreshAuth, isReady } = useTelegram();
+  const { t } = useLanguage();
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterTab, setFilterTab] = useState<"ALL" | "ACTIVE" | "DONE">("ALL");
@@ -124,10 +126,10 @@ export default function MyOrdersPage() {
   });
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 pb-20">
+    <div className="flex flex-col min-h-screen bg-gray-50 pb-32">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-3 shadow-xs">
-        <h1 className="text-base font-bold text-gray-900 mb-2">My Orders</h1>
+        <h1 className="text-base font-bold text-gray-900 mb-2">{t("orders_title")}</h1>
 
         {/* Tab Filters */}
         <div className="flex gap-2">
@@ -143,10 +145,10 @@ export default function MyOrdersPage() {
               }`}
             >
               {tab === "ALL"
-                ? "All Orders"
+                ? t("orders_all")
                 : tab === "ACTIVE"
-                  ? "Active"
-                  : "History"}
+                  ? t("orders_active")
+                  : t("orders_history")}
             </button>
           ))}
         </div>
@@ -205,7 +207,7 @@ export default function MyOrdersPage() {
             <div className="flex flex-col gap-2 max-w-xs mx-auto">
               <Link
                 href="/register"
-                className="inline-flex items-center justify-center gap-1.5 px-4 py-3 min-h-[44px] bg-gradient-to-r from-neutral-950 via-neutral-900 to-neutral-800 hover:from-neutral-900 hover:to-neutral-700 text-white rounded-2xl text-xs font-bold shadow-md active:scale-95 transition-all"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-3 min-h-[44px] bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-bold shadow-md shadow-blue-500/20 active:scale-95 transition-all"
               >
                 Register as Partner <ArrowRight className="w-3.5 h-3.5" />
               </Link>
@@ -265,18 +267,18 @@ export default function MyOrdersPage() {
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="bg-white rounded-3xl p-10 text-center border border-neutral-200 mt-6 shadow-xs">
-            <ShoppingBag className="w-10 h-10 text-neutral-300 mx-auto mb-2" />
+            <ReceiptText className="w-10 h-10 text-blue-300 mx-auto mb-2" />
             <p className="text-sm font-bold text-neutral-800">
-              No orders found
+              {t("orders_no_orders")}
             </p>
             <p className="text-xs text-neutral-400 mt-1">
-              You haven&apos;t placed any orders yet.
+              {t("orders_no_orders_desc")}
             </p>
             <Link
               href="/products"
-              className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-neutral-950 to-neutral-800 text-white rounded-2xl text-xs font-bold shadow-sm active:scale-95 transition-all"
+              className="mt-4 inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-bold shadow-sm shadow-blue-500/20 active:scale-95 transition-all"
             >
-              Start Ordering <ArrowRight className="w-3.5 h-3.5" />
+              {t("orders_start_shopping")} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
         ) : (
