@@ -12,6 +12,13 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: number;
+}
+
 export function NavigationBar() {
   const pathname = usePathname();
   const { t } = useLanguage();
@@ -25,7 +32,7 @@ export function NavigationBar() {
     return null;
   }
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { href: "/", label: t("nav_home"), icon: Store },
     { href: "/products", label: t("nav_catalog"), icon: Package },
     { href: "/orders", label: t("nav_orders"), icon: ReceiptText },
