@@ -9,7 +9,6 @@ import {
   ReceiptText,
   Sparkles,
   ChevronRight,
-  ChevronLeft,
   Plus,
   Check,
   Building2,
