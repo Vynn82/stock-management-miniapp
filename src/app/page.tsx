@@ -215,10 +215,10 @@ export default function HomePage() {
             </div>
           )}
           <div className={`absolute z-20 flex items-center gap-2 ${activeBanner === 0 ? "left-1/2 -translate-x-1/2 top-[64px]" : "left-[63%] -translate-x-1/2 top-[95px]"}`}>
-            <Link href={banners[activeBanner].href} className="rounded-full bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-1.5 text-[10px] sm:text-xs font-semibold shadow-md shadow-blue-950/25 active:scale-95 transition-all">
+            <Link href={banners[activeBanner].href} className="rounded-full bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-1.5 text-[10px] sm:text-xs font-semibold whitespace-nowrap shrink-0 shadow-md shadow-blue-950/25 active:scale-95 transition-all">
               Learn more
             </Link>
-            <Link href={banners[activeBanner].href} className="rounded-full border border-blue-300/80 bg-black/35 hover:bg-black/50 text-white px-3.5 py-1.5 text-[10px] sm:text-xs font-semibold active:scale-95 transition-all">
+            <Link href={banners[activeBanner].href} className="rounded-full border border-blue-300/80 bg-black/35 hover:bg-black/50 text-white px-3.5 py-1.5 text-[10px] sm:text-xs font-semibold whitespace-nowrap shrink-0 active:scale-95 transition-all">
               Buy
             </Link>
           </div>
