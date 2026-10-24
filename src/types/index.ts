@@ -114,6 +114,12 @@ export interface CustomerOrder {
   paymentStatus: PaymentStatus;
   paymentMethod: "CASH";
   totalAmount: number;
+  deliveryAddress?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  province?: string | null;
+  district?: string | null;
+  commune?: string | null;
   remark: string | null;
   createdAt: string;
   updatedAt: string;

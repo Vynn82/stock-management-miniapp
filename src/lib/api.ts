@@ -338,15 +338,20 @@ export const api = {
   async getMyOrders(params?: { page?: number; limit?: number }): Promise<CustomerOrder[]> {
     const query = new URLSearchParams();
     if (params?.page) query.append('page', String(params.page));
-    if (params?.limit) query.append('limit', String(params.limit || 20));
+    if (params?.limit) query.append('limit', String(params.limit || 50));
 
     const qs = query.toString() ? `?${query.toString()}` : '';
-    const res = await request<CustomerOrder[] | { items: CustomerOrder[] }>(`customer-orders/my-orders${qs}`);
-    return Array.isArray(res) ? res : res.items || [];
+    const res = await request<PaginatedApiResponse<CustomerOrder> | CustomerOrder[]>(`customer-orders/my-orders${qs}`);
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res?.data)) return res.data;
+    if (Array.isArray(res?.items)) return res.items;
+    return [];
   },
 
   async getMyOrder(id: string): Promise<CustomerOrder> {
-    return request<CustomerOrder>(`customer-orders/my-orders/${id}`);
+    const res = await request<CustomerOrder | { data: CustomerOrder }>(`customer-orders/my-orders/${id}`);
+    if (res && 'data' in res && res.data) return res.data;
+    return res as CustomerOrder;
   },
 
   async sendCustomerResponse(
