@@ -44,7 +44,7 @@ export default function CustomerServicePage() {
             <p className="flex items-center gap-2"><Clock3 className="h-4 w-4 shrink-0" />{t("support_hours")}</p>
           </div>
           <a
-            href="https://t.me/CPLPLAYInsiderHub"
+            href="https://t.me/+t3DS6wptIcw5YzVl"
             target="_blank"
             rel="noreferrer"
             className="mt-5 flex min-h-12 items-center justify-center gap-2 rounded-full bg-sky-600 px-4 text-sm font-bold text-white shadow-md shadow-sky-600/20 transition-colors hover:bg-sky-700 active:scale-[0.99]"

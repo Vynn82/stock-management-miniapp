@@ -24,8 +24,7 @@ export type OrderTabKey =
   | "TO_CONFIRM"
   | "TO_SHIP"
   | "TO_RECEIVE"
-  | "COMPLETED"
-  | "CANCELLED";
+  | "COMPLETED";
 
 interface TabDefinition {
   key: OrderTabKey;
@@ -39,13 +38,12 @@ const ORDER_TABS: TabDefinition[] = [
   { key: "TO_SHIP", labelKey: "orders_tab_to_ship", defaultLabel: "To Ship" },
   { key: "TO_RECEIVE", labelKey: "orders_tab_to_receive", defaultLabel: "To Receive" },
   { key: "COMPLETED", labelKey: "orders_tab_completed", defaultLabel: "Completed" },
-  { key: "CANCELLED", labelKey: "orders_tab_cancelled", defaultLabel: "Cancelled" },
 ];
 
 function matchesTab(order: CustomerOrder, tab: OrderTabKey): boolean {
   switch (tab) {
     case "ALL":
-      return true;
+      return order.status !== "CANCELLED" && order.status !== "REJECTED";
     case "TO_CONFIRM":
       return (
         order.status === "PENDING_REVIEW" ||
@@ -64,13 +62,8 @@ function matchesTab(order: CustomerOrder, tab: OrderTabKey): boolean {
       );
     case "COMPLETED":
       return order.status === "COMPLETED";
-    case "CANCELLED":
-      return (
-        order.status === "CANCELLED" ||
-        order.status === "REJECTED"
-      );
     default:
-      return true;
+      return order.status !== "CANCELLED" && order.status !== "REJECTED";
   }
 }
 
@@ -173,12 +166,11 @@ export default function MyOrdersPage() {
   }, [authStatus, isReady, loadOrders]);
 
   const counts: Record<OrderTabKey, number> = {
-    ALL: orders.length,
+    ALL: orders.filter((o) => matchesTab(o, "ALL")).length,
     TO_CONFIRM: orders.filter((o) => matchesTab(o, "TO_CONFIRM")).length,
     TO_SHIP: orders.filter((o) => matchesTab(o, "TO_SHIP")).length,
     TO_RECEIVE: orders.filter((o) => matchesTab(o, "TO_RECEIVE")).length,
     COMPLETED: orders.filter((o) => matchesTab(o, "COMPLETED")).length,
-    CANCELLED: orders.filter((o) => matchesTab(o, "CANCELLED")).length,
   };
 
   const hasActionRequired = orders.some((o) => o.status === "WAITING_CUSTOMER");
@@ -207,11 +199,7 @@ export default function MyOrdersPage() {
           title: "No completed orders",
           desc: t("orders_no_orders_completed"),
         };
-      case "CANCELLED":
-        return {
-          title: "No cancelled orders",
-          desc: t("orders_no_orders_cancelled"),
-        };
+
       case "ALL":
       default:
         return {
