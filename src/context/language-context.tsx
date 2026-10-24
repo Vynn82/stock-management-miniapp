@@ -220,7 +220,7 @@ export const translations = {
     nav_home: "ទំព័រដើម",
     nav_catalog: "ផលិតផល",
     nav_cart: "កន្ត្រក",
-    nav_orders: "ការបញ្ជាទិញ",
+    nav_orders: "បញ្ជាទិញ",
     nav_settings: "ការកំណត់",
     support_nav: "ជំនួយ",
     support_title: "សេវាបម្រើអតិថិជន",

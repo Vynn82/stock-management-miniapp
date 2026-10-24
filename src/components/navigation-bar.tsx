@@ -11,6 +11,7 @@ import {
   Headset,
 } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
+import { useTelegram } from "@/context/telegram-context";
 
 interface NavItem {
   href: string;
@@ -22,8 +23,9 @@ interface NavItem {
 export function NavigationBar() {
   const pathname = usePathname();
   const { t } = useLanguage();
+  const { hapticFeedback } = useTelegram();
 
-  // Hide navigation bar during checkout flow to avoid clutter and button collision
+  // Hide navigation bar during checkout flow or product detail to avoid clutter and button collision
   if (
     pathname === "/checkout" ||
     pathname?.startsWith("/checkout/") ||
@@ -37,14 +39,13 @@ export function NavigationBar() {
     { href: "/products", label: t("nav_catalog"), icon: Package },
     { href: "/orders", label: t("nav_orders"), icon: ReceiptText },
     { href: "/customer-service", label: t("support_nav"), icon: Headset },
+    { href: "/settings", label: t("nav_settings"), icon: Settings2 },
   ];
 
-  const isSettingsActive = pathname === "/settings" || pathname?.startsWith("/settings/");
-
   return (
-    <nav className="fixed bottom-3.5 left-0 right-0 z-40 px-3 max-w-md mx-auto flex items-center gap-2 pointer-events-none transition-all">
-      {/* Main Glassmorphic Dock Capsule */}
-      <div className="pointer-events-auto flex-1 backdrop-blur-2xl bg-white/85 border border-white/80 shadow-[0_12px_40px_rgba(0,0,0,0.09)] rounded-[2.2rem] px-2 py-1.5 flex justify-around items-center">
+    <nav className="fixed bottom-3 left-0 right-0 z-40 px-3 max-w-md mx-auto pointer-events-none transition-all">
+      {/* Unified 5-Tab Glassmorphic Capsule */}
+      <div className="pointer-events-auto backdrop-blur-2xl bg-white/92 border border-neutral-200/80 shadow-[0_10px_35px_rgba(0,0,0,0.08)] rounded-[2rem] p-1.5 flex items-center justify-between">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -56,35 +57,40 @@ export function NavigationBar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex-1 flex flex-col items-center justify-center py-1 px-1 rounded-full transition-all duration-300 ease-out active:scale-90 relative ${
-                isActive ? "text-blue-600" : "text-neutral-400 hover:text-neutral-700"
-              }`}
+              onClick={() => {
+                try {
+                  hapticFeedback("light");
+                } catch {}
+              }}
+              className="flex-1 min-w-0 flex flex-col items-center justify-center py-0.5 px-0.5 active:scale-95 transition-transform duration-200"
             >
               <div
-                className={`relative transition-all duration-300 flex flex-col items-center justify-center ${
+                className={`w-full flex flex-col items-center justify-center py-1.5 px-1 rounded-2xl transition-all duration-200 ${
                   isActive
-                    ? "bg-gradient-to-b from-blue-50/90 to-indigo-50/80 shadow-[0_4px_16px_rgba(37,99,235,0.12)] border border-blue-100/90 rounded-full px-3.5 py-1 -translate-y-0.5"
-                    : "px-2 py-1"
+                    ? "bg-blue-50/90 text-blue-600 border border-blue-100/90 shadow-xs"
+                    : "text-neutral-400 hover:text-neutral-600"
                 }`}
               >
                 <div className="relative">
                   <Icon
-                    className={`w-5 h-5 transition-transform duration-300 ${
-                      isActive ? "stroke-[2.5] text-blue-600 scale-105" : "stroke-[1.8]"
+                    className={`w-5 h-5 transition-transform duration-200 ${
+                      isActive
+                        ? "stroke-[2.4] text-blue-600 scale-105"
+                        : "stroke-[1.8]"
                     }`}
                   />
                   {item.badge !== undefined && item.badge > 0 && (
-                    <span
-                      className="absolute -top-1.5 -right-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[9px] font-black rounded-full min-w-4 h-4 px-1 flex items-center justify-center shadow-md animate-in zoom-in-50 duration-200"
-                    >
+                    <span className="absolute -top-1.5 -right-2 bg-blue-600 text-white text-[9px] font-black rounded-full min-w-3.5 h-3.5 px-1 flex items-center justify-center shadow-xs">
                       {item.badge > 99 ? "99+" : item.badge}
                     </span>
                   )}
                 </div>
 
                 <span
-                  className={`text-[9px] tracking-tight mt-0.5 transition-all duration-300 ${
-                    isActive ? "font-extrabold text-blue-600" : "font-medium text-neutral-400"
+                  className={`text-[10px] tracking-tight mt-0.5 whitespace-nowrap truncate max-w-full text-center transition-colors duration-200 ${
+                    isActive
+                      ? "font-extrabold text-blue-600"
+                      : "font-medium text-neutral-400"
                   }`}
                 >
                   {item.label}
@@ -94,30 +100,6 @@ export function NavigationBar() {
           );
         })}
       </div>
-
-      {/* Right Circular Floating Button for Settings / More */}
-      <Link
-        href="/settings"
-        className={`pointer-events-auto w-14 h-14 rounded-full backdrop-blur-2xl border shadow-[0_12px_40px_rgba(0,0,0,0.09)] flex flex-col items-center justify-center shrink-0 active:scale-95 transition-all duration-300 ${
-          isSettingsActive
-            ? "bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-500 text-white border-blue-400/40 shadow-lg shadow-blue-500/25 -translate-y-0.5"
-            : "bg-white/85 text-neutral-500 hover:text-blue-600 border-white/80"
-        }`}
-        aria-label="Settings"
-      >
-        <Settings2
-          className={`w-5 h-5 transition-transform duration-300 ${
-            isSettingsActive ? "stroke-[2.4] text-white scale-105" : "stroke-[1.8]"
-          }`}
-        />
-        <span
-          className={`text-[9px] tracking-tight mt-0.5 ${
-            isSettingsActive ? "font-extrabold text-white" : "font-medium text-neutral-400"
-          }`}
-        >
-          {t("nav_settings")}
-        </span>
-      </Link>
     </nav>
   );
 }
