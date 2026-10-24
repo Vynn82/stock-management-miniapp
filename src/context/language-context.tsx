@@ -131,6 +131,25 @@ export const translations = {
     orders_items: "items",
     orders_total: "Total",
 
+    // Order Detail & Decision
+    order_action_required: "Action Required: Staff Inquiry",
+    order_staff_question: "Question from Staff:",
+    order_default_question:
+      "We have limited stock available for your order. Would you like to accept the available items now, wait for full restock, or cancel your order?",
+    order_accept_available: "Accept Available Now",
+    order_accept_general: "Accept & Confirm Order",
+    order_accept_subtext: "Proceed with available units immediately",
+    order_wait_full: "Wait for Full Order",
+    order_wait_restock: "Wait for Restock",
+    order_wait_subtext: "Hold and dispatch all items together once restocked",
+    order_cancel_btn: "Cancel Order",
+    order_cancel_subtext: "Cancel this order if items are needed sooner",
+    order_cancel_confirm: "Are you sure you want to cancel this order?",
+    order_custom_msg_title: "Communication & Updates",
+    order_custom_msg_placeholder: "Type a reply to staff...",
+    order_telegram_reply_hint: "You can also reply directly in your Telegram chat.",
+    order_units: "units",
+
     // Settings
     settings_title: "Account & Settings",
     settings_subtitle: "Manage profile, language & delivery preferences",
@@ -302,6 +321,25 @@ export const translations = {
     orders_start_shopping: "ចាប់ផ្តើមទិញទំនិញ",
     orders_items: "មុខ",
     orders_total: "សរុប",
+
+    // Order Detail & Decision
+    order_action_required: "ត្រូវការការសម្រេចចិត្ត៖ សារសាកសួរពីបុគ្គលិក",
+    order_staff_question: "សំណួរពីបុគ្គលិក៖",
+    order_default_question:
+      "យើងខ្ញុំមានស្តុកកំណត់សម្រាប់ទំនិញរបស់អ្នក។ តើអ្នកចង់ទទួលយកចំនួនដែលមានឥឡូវនេះ រង់ចាំការបំពេញស្តុកគ្រប់ចំនួន ឬបោះបង់ការបញ្ជាទិញ?",
+    order_accept_available: "យល់ព្រមយកចំនួនដែលមានឥឡូវនេះ",
+    order_accept_general: "យល់ព្រម & បញ្ជាក់ការបញ្ជាទិញ",
+    order_accept_subtext: "បន្តដំណើរការដឹកជញ្ជូនទំនិញដែលមានក្នុងស្តុកភ្លាមៗ",
+    order_wait_full: "រង់ចាំទំនិញគ្រប់ចំនួន",
+    order_wait_restock: "រង់ចាំការបំពេញស្តុកថ្មី",
+    order_wait_subtext: "រង់ចាំទំនិញគ្រប់ចំនួន រួចដឹកជញ្ជូនរួមគ្នាតែម្តង",
+    order_cancel_btn: "បោះបង់ការបញ្ជាទិញ",
+    order_cancel_subtext: "បោះបង់ការបញ្ជាទិញនេះ ប្រសិនបើអ្នកត្រូវការទំនិញជាបន្ទាន់",
+    order_cancel_confirm: "តើអ្នកពិតជាចង់បោះបង់ការបញ្ជាទិញនេះមែនទេ?",
+    order_custom_msg_title: "ការទំនាក់ទំនង & ការជូនដំណឹង",
+    order_custom_msg_placeholder: "សរសេរសារឆ្លើយតបទៅកាន់បុគ្គលិក...",
+    order_telegram_reply_hint: "អ្នកក៏អាចឆ្លើយតបដោយផ្ទាល់នៅក្នុងការជជែក Telegram របស់អ្នកផងដែរ។",
+    order_units: "ឯកតា",
 
     // Settings
     settings_title: "គណនី & ការកំណត់",

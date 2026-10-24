@@ -42,7 +42,7 @@ export default function HomePage() {
 
   const banners = [
     {
-      image: "/promo-pro.png",
+      image: "/promo-pro.jpg",
       alt: "iPhone Pro promotional banner",
       title: "iPhone 18 Pro",
       subtitle: "Pro further.",
@@ -198,7 +198,7 @@ export default function HomePage() {
       {/* Main Content Body */}
       <div className="px-4 space-y-6 mt-5">
         {/* Promotional Banner Slideshow */}
-        <section className="relative h-[190px] sm:h-[220px] overflow-hidden rounded-[1.75rem] bg-neutral-950 shadow-[0_14px_34px_rgba(15,23,42,0.16)]" aria-roledescription="carousel" aria-label="Store promotions">
+        <section className="relative h-[235px] sm:h-[260px] overflow-hidden rounded-[1.75rem] bg-neutral-950 shadow-[0_14px_34px_rgba(15,23,42,0.16)]" aria-roledescription="carousel" aria-label="Store promotions">
           <Image
             key={banners[activeBanner].image}
             src={banners[activeBanner].image}
