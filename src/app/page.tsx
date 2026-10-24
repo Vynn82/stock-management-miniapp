@@ -314,7 +314,7 @@ export default function HomePage() {
                   {recentOrder.items?.length || 0} {t("home_items")} &bull; ${Number(recentOrder.totalAmount).toFixed(2)}
                 </span>
                 <span className="text-blue-600 font-bold flex items-center gap-0.5 text-xs">
-                  {t("orders_active")} <ChevronRight className="w-3.5 h-3.5" />
+                  {t("orders_view_details")} <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </div>
             </Link>

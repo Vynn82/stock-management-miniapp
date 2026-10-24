@@ -19,6 +19,61 @@ import { useTelegram } from "@/context/telegram-context";
 import { useLanguage } from "@/context/language-context";
 import { CustomerOrder, CustomerOrderStatus } from "@/types";
 
+export type OrderTabKey =
+  | "ALL"
+  | "TO_CONFIRM"
+  | "TO_SHIP"
+  | "TO_RECEIVE"
+  | "COMPLETED"
+  | "CANCELLED";
+
+interface TabDefinition {
+  key: OrderTabKey;
+  labelKey: string;
+  defaultLabel: string;
+}
+
+const ORDER_TABS: TabDefinition[] = [
+  { key: "ALL", labelKey: "orders_tab_all", defaultLabel: "All" },
+  { key: "TO_CONFIRM", labelKey: "orders_tab_to_confirm", defaultLabel: "To Confirm" },
+  { key: "TO_SHIP", labelKey: "orders_tab_to_ship", defaultLabel: "To Ship" },
+  { key: "TO_RECEIVE", labelKey: "orders_tab_to_receive", defaultLabel: "To Receive" },
+  { key: "COMPLETED", labelKey: "orders_tab_completed", defaultLabel: "Completed" },
+  { key: "CANCELLED", labelKey: "orders_tab_cancelled", defaultLabel: "Cancelled" },
+];
+
+function matchesTab(order: CustomerOrder, tab: OrderTabKey): boolean {
+  switch (tab) {
+    case "ALL":
+      return true;
+    case "TO_CONFIRM":
+      return (
+        order.status === "PENDING_REVIEW" ||
+        order.status === "WAITING_CUSTOMER"
+      );
+    case "TO_SHIP":
+      return (
+        order.status === "CONFIRMED" ||
+        order.status === "WAITING_STOCK" ||
+        order.status === "PROCESSING"
+      );
+    case "TO_RECEIVE":
+      return (
+        order.status === "OUT_FOR_DELIVERY" ||
+        order.status === "DELIVERED"
+      );
+    case "COMPLETED":
+      return order.status === "COMPLETED";
+    case "CANCELLED":
+      return (
+        order.status === "CANCELLED" ||
+        order.status === "REJECTED"
+      );
+    default:
+      return true;
+  }
+}
+
 function getStatusBadge(status: CustomerOrderStatus) {
   switch (status) {
     case "PENDING_REVIEW":
@@ -86,7 +141,7 @@ export default function MyOrdersPage() {
   const [orders, setOrders] = useState<CustomerOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [filterTab, setFilterTab] = useState<"ALL" | "ACTIVE" | "DONE">("ALL");
+  const [filterTab, setFilterTab] = useState<OrderTabKey>("ALL");
   const [retrying, setRetrying] = useState(false);
 
   const loadOrders = useCallback(async () => {
@@ -117,46 +172,60 @@ export default function MyOrdersPage() {
     }
   }, [authStatus, isReady, loadOrders]);
 
-  const counts = {
+  const counts: Record<OrderTabKey, number> = {
     ALL: orders.length,
-    ACTIVE: orders.filter(
-      (o) =>
-        o.status !== "COMPLETED" &&
-        o.status !== "REJECTED" &&
-        o.status !== "CANCELLED",
-    ).length,
-    DONE: orders.filter(
-      (o) =>
-        o.status === "COMPLETED" ||
-        o.status === "REJECTED" ||
-        o.status === "CANCELLED",
-    ).length,
+    TO_CONFIRM: orders.filter((o) => matchesTab(o, "TO_CONFIRM")).length,
+    TO_SHIP: orders.filter((o) => matchesTab(o, "TO_SHIP")).length,
+    TO_RECEIVE: orders.filter((o) => matchesTab(o, "TO_RECEIVE")).length,
+    COMPLETED: orders.filter((o) => matchesTab(o, "COMPLETED")).length,
+    CANCELLED: orders.filter((o) => matchesTab(o, "CANCELLED")).length,
   };
 
-  const filteredOrders = orders.filter((o) => {
-    if (filterTab === "ALL") return true;
-    if (filterTab === "ACTIVE") {
-      return (
-        o.status !== "COMPLETED" &&
-        o.status !== "REJECTED" &&
-        o.status !== "CANCELLED"
-      );
+  const hasActionRequired = orders.some((o) => o.status === "WAITING_CUSTOMER");
+
+  const filteredOrders = orders.filter((o) => matchesTab(o, filterTab));
+
+  const getEmptyMessage = (tab: OrderTabKey) => {
+    switch (tab) {
+      case "TO_CONFIRM":
+        return {
+          title: "No orders to confirm",
+          desc: t("orders_no_orders_to_confirm"),
+        };
+      case "TO_SHIP":
+        return {
+          title: "No orders to ship",
+          desc: t("orders_no_orders_to_ship"),
+        };
+      case "TO_RECEIVE":
+        return {
+          title: "No orders in delivery",
+          desc: t("orders_no_orders_to_receive"),
+        };
+      case "COMPLETED":
+        return {
+          title: "No completed orders",
+          desc: t("orders_no_orders_completed"),
+        };
+      case "CANCELLED":
+        return {
+          title: "No cancelled orders",
+          desc: t("orders_no_orders_cancelled"),
+        };
+      case "ALL":
+      default:
+        return {
+          title: t("orders_no_orders"),
+          desc: t("orders_no_orders_desc"),
+        };
     }
-    if (filterTab === "DONE") {
-      return (
-        o.status === "COMPLETED" ||
-        o.status === "REJECTED" ||
-        o.status === "CANCELLED"
-      );
-    }
-    return true;
-  });
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-32">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-3 shadow-xs">
-        <div className="flex justify-between items-center mb-2">
+        <div className="flex justify-between items-center mb-2.5">
           <h1 className="text-base font-bold text-gray-900">{t("orders_title")}</h1>
           <button
             type="button"
@@ -165,7 +234,7 @@ export default function MyOrdersPage() {
               loadOrders();
             }}
             disabled={loading}
-            className="p-1.5 text-gray-500 hover:text-blue-600 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-1.5"
+            className="p-1.5 text-gray-500 hover:text-blue-600 rounded-xl hover:bg-gray-100 transition-colors flex items-center gap-1.5 active:scale-95"
             aria-label="Refresh orders"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-blue-600" : ""}`} />
@@ -173,42 +242,47 @@ export default function MyOrdersPage() {
           </button>
         </div>
 
-        {/* Tab Filters */}
-        <div className="flex gap-2">
-          {(["ALL", "ACTIVE", "DONE"] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => {
-                hapticFeedback("light");
-                setFilterTab(tab);
-              }}
-              className={`flex-1 py-1.5 px-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 ${
-                filterTab === tab
-                  ? "bg-blue-600 text-white shadow-xs"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              <span>
-                {tab === "ALL"
-                  ? t("orders_all")
-                  : tab === "ACTIVE"
-                    ? t("orders_active")
-                    : t("orders_history")}
-              </span>
-              {orders.length > 0 && (
-                <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-                    filterTab === tab
-                      ? "bg-white/20 text-white font-bold"
-                      : "bg-gray-200 text-gray-700"
-                  }`}
-                >
-                  {counts[tab]}
-                </span>
-              )}
-            </button>
-          ))}
+        {/* E-Commerce Standard Horizontal Scrollable Tabs */}
+        <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5 -mx-4 px-4 scroll-smooth">
+          {ORDER_TABS.map((tab) => {
+            const isSelected = filterTab === tab.key;
+            const count = counts[tab.key];
+            const isActionTab = tab.key === "TO_CONFIRM" && hasActionRequired;
+
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => {
+                  hapticFeedback("light");
+                  setFilterTab(tab.key);
+                }}
+                className={`relative shrink-0 py-2 px-3.5 text-xs font-bold rounded-xl transition-all duration-200 flex items-center gap-1.5 whitespace-nowrap active:scale-95 ${
+                  isSelected
+                    ? "bg-blue-600 text-white shadow-sm shadow-blue-500/25"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                <span>{t(tab.labelKey) || tab.defaultLabel}</span>
+                {count > 0 && (
+                  <span
+                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold leading-none ${
+                      isSelected
+                        ? "bg-white/25 text-white"
+                        : isActionTab
+                          ? "bg-purple-100 text-purple-700 ring-1 ring-purple-300"
+                          : "bg-gray-200 text-gray-700"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )}
+                {isActionTab && !isSelected && (
+                  <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
+                )}
+              </button>
+            );
+          })}
         </div>
       </header>
 
@@ -350,10 +424,10 @@ export default function MyOrdersPage() {
           <div className="bg-white rounded-3xl p-10 text-center border border-neutral-200 mt-6 shadow-xs">
             <ReceiptText className="w-10 h-10 text-blue-300 mx-auto mb-2" />
             <p className="text-sm font-bold text-neutral-800">
-              {t("orders_no_orders")}
+              {getEmptyMessage(filterTab).title}
             </p>
-            <p className="text-xs text-neutral-400 mt-1">
-              {t("orders_no_orders_desc")}
+            <p className="text-xs text-neutral-400 mt-1 max-w-xs mx-auto">
+              {getEmptyMessage(filterTab).desc}
             </p>
             <div className="flex flex-col gap-2 max-w-xs mx-auto mt-4">
               <Link
