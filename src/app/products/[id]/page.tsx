@@ -221,21 +221,17 @@ export default function ProductDetailPage({
                     ? v.price
                     : product.price || 0,
                 );
-                const isOutOfStock = v.stock !== undefined && Number(v.stock) <= 0;
 
                 return (
                   <button
                     key={v.id}
                     type="button"
-                    disabled={isOutOfStock}
                     onClick={() => {
                       hapticFeedback("light");
                       setSelectedVariant(v);
                     }}
                     className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] flex flex-col justify-between gap-1.5 ${
-                      isOutOfStock
-                        ? "opacity-50 cursor-not-allowed bg-neutral-50 border-neutral-200"
-                        : isSelected
+                      isSelected
                         ? "border-blue-600 bg-blue-50/80 shadow-xs ring-2 ring-blue-600/20"
                         : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
                     }`}
@@ -262,11 +258,6 @@ export default function ProductDetailPage({
                       >
                         ${vPrice.toFixed(2)}
                       </span>
-                      {v.stock !== undefined && (
-                        <span className="text-[10px] text-neutral-400">
-                          {Number(v.stock) > 0 ? `${v.stock} left` : "Out"}
-                        </span>
-                      )}
                     </div>
                   </button>
                 );

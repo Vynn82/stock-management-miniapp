@@ -47,13 +47,6 @@ export function VariantSelectorSheet({
   );
 
   const activeImage = selectedVariant?.image || product.image;
-  const activeStock =
-    selectedVariant?.stock !== undefined
-      ? Number(selectedVariant.stock)
-      : product.totalStock !== undefined
-      ? Number(product.totalStock)
-      : undefined;
-
   const subtotal = activePrice * quantity;
 
   const handleConfirmAdd = () => {
@@ -130,20 +123,6 @@ export function VariantSelectorSheet({
                   </span>
                 )}
               </div>
-
-              {activeStock !== undefined && (
-                <div className="mt-1">
-                  <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block ${
-                      activeStock > 0
-                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                        : "bg-rose-50 text-rose-700 border border-rose-200"
-                    }`}
-                  >
-                    {activeStock > 0 ? `${activeStock} in stock` : "Out of stock"}
-                  </span>
-                </div>
-              )}
             </div>
           </div>
 
@@ -180,21 +159,17 @@ export function VariantSelectorSheet({
                       ? v.price
                       : product.price || 0,
                   );
-                  const isOutOfStock = v.stock !== undefined && Number(v.stock) <= 0;
 
                   return (
                     <button
                       key={v.id}
                       type="button"
-                      disabled={isOutOfStock}
                       onClick={() => {
                         hapticFeedback("light");
                         setSelectedVariant(v);
                       }}
                       className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] flex flex-col justify-between gap-1.5 ${
-                        isOutOfStock
-                          ? "opacity-50 cursor-not-allowed bg-neutral-50 border-neutral-200"
-                          : isSelected
+                        isSelected
                           ? "border-blue-600 bg-blue-50/70 shadow-xs ring-2 ring-blue-600/20"
                           : "border-neutral-200 hover:border-neutral-300 bg-white"
                       }`}
@@ -222,11 +197,6 @@ export function VariantSelectorSheet({
                         >
                           ${vPrice.toFixed(2)}
                         </span>
-                        {v.stock !== undefined && (
-                          <span className="text-[10px] text-neutral-400">
-                            {Number(v.stock) > 0 ? `${v.stock} left` : "Out of stock"}
-                          </span>
-                        )}
                       </div>
                     </button>
                   );
@@ -284,12 +254,11 @@ export function VariantSelectorSheet({
           <button
             type="button"
             onClick={handleConfirmAdd}
-            disabled={activeStock !== undefined && activeStock <= 0}
             className={`w-full py-3.5 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] ${
               isAdded
                 ? "bg-emerald-600 text-white shadow-emerald-500/20"
                 : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25"
-            } disabled:opacity-50 disabled:pointer-events-none`}
+            }`}
           >
             {isAdded ? (
               <>
