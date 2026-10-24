@@ -10,6 +10,7 @@ import { useLanguage } from "@/context/language-context";
 import { api } from "@/lib/api";
 import { Category, Product } from "@/types";
 import { ProductImage } from "@/components/product-image";
+import { VariantSelectorSheet } from "@/components/variant-selector-sheet";
 
 function ProductsListContent() {
   const searchParams = useSearchParams();
@@ -22,6 +23,7 @@ function ProductsListContent() {
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedProductForVariant, setSelectedProductForVariant] = useState<Product | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [search, setSearch] = useState(initialSearch);
   const [loading, setLoading] = useState(true);
@@ -52,9 +54,18 @@ function ProductsListContent() {
 
   const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+
+    if (product.variants && product.variants.length > 0) {
+      hapticFeedback("light");
+      setSelectedProductForVariant(product);
+      return;
+    }
+
     hapticFeedback("medium");
     addToCart({
       productId: product.id,
+      variantId: null,
       productName: product.name,
       productCode: product.code,
       price: Number(product.price),
@@ -244,6 +255,19 @@ function ProductsListContent() {
           </div>
         )}
       </div>
+
+      <VariantSelectorSheet
+        product={selectedProductForVariant}
+        isOpen={!!selectedProductForVariant}
+        onClose={() => setSelectedProductForVariant(null)}
+        onAddToCart={(item, qty) => {
+          addToCart(item, qty);
+          if (selectedProductForVariant) {
+            setAddedId(selectedProductForVariant.id);
+            setTimeout(() => setAddedId(null), 1400);
+          }
+        }}
+      />
     </div>
   );
 }

@@ -213,33 +213,61 @@ export default function ProductDetailPage({
             <label className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase block">
               {t("detail_choose_variant")} ({product.variants.length})
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {product.variants.map((v) => {
                 const isSelected = selectedVariant?.id === v.id;
+                const vPrice = Number(
+                  v.price !== undefined && v.price !== null
+                    ? v.price
+                    : product.price || 0,
+                );
+                const isOutOfStock = v.stock !== undefined && Number(v.stock) <= 0;
+
                 return (
                   <button
                     key={v.id}
                     type="button"
+                    disabled={isOutOfStock}
                     onClick={() => {
                       hapticFeedback("light");
                       setSelectedVariant(v);
                     }}
-                    className={`px-3.5 py-2.5 rounded-2xl text-xs font-semibold border transition-all text-left active:scale-95 ${
-                      isSelected
-                        ? "border-neutral-900 bg-neutral-900 text-white"
-                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400"
+                    className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] flex flex-col justify-between gap-1.5 ${
+                      isOutOfStock
+                        ? "opacity-50 cursor-not-allowed bg-neutral-50 border-neutral-200"
+                        : isSelected
+                        ? "border-blue-600 bg-blue-50/80 shadow-xs ring-2 ring-blue-600/20"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
                     }`}
                   >
-                    <span>{v.name}</span>
-                    {v.price && (
+                    <div className="flex items-start justify-between gap-1.5">
                       <span
-                        className={`block text-[10px] font-normal ${
-                          isSelected ? "text-neutral-300" : "text-neutral-400"
+                        className={`text-xs font-bold leading-tight ${
+                          isSelected ? "text-blue-950 font-extrabold" : "text-neutral-800"
                         }`}
                       >
-                        ${Number(v.price).toFixed(2)}
+                        {v.name}
                       </span>
-                    )}
+                      {isSelected && (
+                        <div className="w-3.5 h-3.5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
+                          <Check className="w-2 h-2 stroke-[3]" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between pt-0.5">
+                      <span
+                        className={`text-xs font-black tracking-tight ${
+                          isSelected ? "text-blue-700" : "text-neutral-900"
+                        }`}
+                      >
+                        ${vPrice.toFixed(2)}
+                      </span>
+                      {v.stock !== undefined && (
+                        <span className="text-[10px] text-neutral-400">
+                          {Number(v.stock) > 0 ? `${v.stock} left` : "Out"}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 );
               })}

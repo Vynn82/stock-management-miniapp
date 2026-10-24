@@ -13,6 +13,7 @@ import {
   Check,
   Building2,
   ArrowRight,
+  Layers,
 } from "lucide-react";
 import { useTelegram } from "@/context/telegram-context";
 import { useCart } from "@/context/cart-context";
@@ -21,6 +22,7 @@ import { api } from "@/lib/api";
 import { CustomerOrder, Product } from "@/types";
 import { ProductImage } from "@/components/product-image";
 import { LanguageFlag } from "@/components/language-flag";
+import { VariantSelectorSheet } from "@/components/variant-selector-sheet";
 
 export default function HomePage() {
   const {
@@ -36,6 +38,7 @@ export default function HomePage() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [recentOrder, setRecentOrder] = useState<CustomerOrder | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProductForVariant, setSelectedProductForVariant] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [addedId, setAddedId] = useState<string | null>(null);
   const [activeBanner, setActiveBanner] = useState(0);
@@ -88,9 +91,18 @@ export default function HomePage() {
 
   const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+
+    if (product.variants && product.variants.length > 0) {
+      hapticFeedback("light");
+      setSelectedProductForVariant(product);
+      return;
+    }
+
     hapticFeedback("medium");
     addToCart({
       productId: product.id,
+      variantId: null,
       productName: product.name,
       productCode: product.code,
       price: Number(product.price),
@@ -368,6 +380,12 @@ export default function HomePage() {
                         <h3 className="font-bold text-xs text-neutral-900 tracking-tight line-clamp-2 min-h-10 group-hover:text-blue-600 transition-colors mt-1">
                           {product.name}
                         </h3>
+                        {product.variants && product.variants.length > 0 && (
+                          <span className="inline-flex items-center gap-1 text-[9px] font-bold text-blue-700 bg-blue-50/90 px-2 py-0.5 rounded-full border border-blue-200/60 mt-1">
+                            <Layers className="w-2.5 h-2.5" />
+                            {product.variants.length} options
+                          </span>
+                        )}
                       </div>
                     </div>
 
@@ -405,6 +423,19 @@ export default function HomePage() {
         </div>
 
       </div>
+
+      <VariantSelectorSheet
+        product={selectedProductForVariant}
+        isOpen={!!selectedProductForVariant}
+        onClose={() => setSelectedProductForVariant(null)}
+        onAddToCart={(item, qty) => {
+          addToCart(item, qty);
+          if (selectedProductForVariant) {
+            setAddedId(selectedProductForVariant.id);
+            setTimeout(() => setAddedId(null), 1400);
+          }
+        }}
+      />
     </div>
   );
 }
