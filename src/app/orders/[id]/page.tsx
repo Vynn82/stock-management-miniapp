@@ -91,6 +91,8 @@ export default function OrderDetailPage({
     return undefined;
   })();
 
+  const hasAvailableStock = typeof proposedQty === 'number' && proposedQty > 0;
+
   const handleAcceptSuggested = async (suggestedQty?: number) => {
     if (!order) return;
     setSubmittingAction(true);
@@ -212,13 +214,23 @@ export default function OrderDetailPage({
           <div className="bg-gradient-to-b from-blue-50/80 to-indigo-50/30 border-2 border-blue-200/90 rounded-2xl p-4 shadow-sm space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-blue-950 font-bold text-xs">
-                <div className="w-6 h-6 rounded-lg bg-blue-600/10 flex items-center justify-center text-blue-600">
+                <div className={`w-6 h-6 rounded-lg ${hasAvailableStock ? 'bg-blue-600/10 text-blue-600' : 'bg-amber-600/10 text-amber-600'} flex items-center justify-center`}>
                   <AlertCircle className="w-3.5 h-3.5" />
                 </div>
-                <span>{t('order_action_required', 'Action Required: Staff Inquiry')}</span>
+                <span>
+                  {hasAvailableStock
+                    ? t('order_action_required', 'Action Required: Staff Inquiry')
+                    : t('order_action_out_of_stock', 'Action Required: Out of Stock')}
+                </span>
               </div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                Decision Needed
+              <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                hasAvailableStock
+                  ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                  : 'bg-rose-100 text-rose-800 border border-rose-200'
+              }`}>
+                {hasAvailableStock
+                  ? t('order_decision_needed', 'Decision Needed')
+                  : t('order_out_of_stock', 'Out of Stock')}
               </span>
             </div>
 
@@ -238,63 +250,76 @@ export default function OrderDetailPage({
               </div>
               <p className="text-xs text-gray-800 leading-relaxed font-medium">
                 {lastStaffQuestion?.message ||
-                  t(
-                    'order_default_question',
-                    'We have limited stock available for your order. Would you like to accept the available items now, wait for full restock, or cancel your order?',
-                  )}
+                  (hasAvailableStock
+                    ? t(
+                        'order_default_question',
+                        'We have limited stock available for your order. Would you like to accept the available items now, wait for full restock, or cancel your order?',
+                      )
+                    : t(
+                        'order_out_of_stock_question',
+                        'This item is currently out of stock. Would you like to wait for restock or cancel your order?',
+                      ))}
               </p>
             </div>
 
-            {/* 3 Clear Decision Action Buttons */}
+            {/* Decision Action Buttons: If Out of Stock, hide option 1 and show only Wait & Cancel */}
             <div className="flex flex-col gap-2 pt-0.5">
-              {/* Option 1: Accept Available (e.g. 10 units) */}
-              <button
-                type="button"
-                disabled={submittingAction}
-                onClick={() => handleAcceptSuggested(proposedQty)}
-                className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] text-white shadow-sm transition-all disabled:opacity-50 flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
-                    <Zap className="w-4 h-4 text-amber-300" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold leading-tight">
-                      {proposedQty
-                        ? `${t('order_accept_available', 'Accept Available Now')} (${proposedQty} ${t('order_units', 'units')})`
-                        : t('order_accept_general', 'Accept & Confirm Order')}
+              {/* Option 1: Accept Available (ONLY shown if stock > 0) */}
+              {hasAvailableStock && (
+                <button
+                  type="button"
+                  disabled={submittingAction}
+                  onClick={() => handleAcceptSuggested(proposedQty)}
+                  className="w-full text-left p-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-[0.99] text-white shadow-sm transition-all disabled:opacity-50 flex items-center justify-between group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+                      <Zap className="w-4 h-4 text-amber-300" />
                     </div>
-                    <div className="text-[10px] text-blue-100/90 leading-tight mt-0.5">
-                      {t('order_accept_subtext', 'Proceed with available units immediately')}
+                    <div>
+                      <div className="text-xs font-bold leading-tight">
+                        {`${t('order_accept_available', 'Accept Available Now')} (${proposedQty} ${t('order_units', 'units')})`}
+                      </div>
+                      <div className="text-[10px] text-blue-100/90 leading-tight mt-0.5">
+                        {t('order_accept_subtext', 'Proceed with available units immediately')}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <Check className="w-4 h-4 text-white/90 group-hover:translate-x-0.5 transition-transform shrink-0" />
-              </button>
+                  <Check className="w-4 h-4 text-white/90 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                </button>
+              )}
 
               {/* Option 2: Wait for Full Order / Restock */}
               <button
                 type="button"
                 disabled={submittingAction}
                 onClick={() => handleWaitForAll(totalRequestedQty)}
-                className="w-full text-left p-3 rounded-xl bg-white hover:bg-blue-50/60 active:scale-[0.99] border border-blue-200 text-gray-800 shadow-xs transition-all disabled:opacity-50 flex items-center justify-between group"
+                className={`w-full text-left p-3 rounded-xl ${
+                  !hasAvailableStock
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
+                    : 'bg-white hover:bg-blue-50/60 border border-blue-200 text-gray-800'
+                } active:scale-[0.99] shadow-xs transition-all disabled:opacity-50 flex items-center justify-between group`}
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 text-blue-600">
+                  <div className={`w-8 h-8 rounded-lg ${!hasAvailableStock ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-600'} flex items-center justify-center shrink-0`}>
                     <Clock className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-gray-900 leading-tight">
+                    <div className={`text-xs font-bold leading-tight ${!hasAvailableStock ? 'text-white' : 'text-gray-900'}`}>
                       {totalRequestedQty > (proposedQty || 0)
                         ? `${t('order_wait_full', 'Wait for Full Order')} (${totalRequestedQty} ${t('order_units', 'units')})`
-                        : t('order_wait_restock', 'Wait for Restock')}
+                        : `${t('order_wait_restock', 'Wait for Restock')} (${totalRequestedQty} ${t('order_units', 'units')})`}
                     </div>
-                    <div className="text-[10px] text-gray-500 leading-tight mt-0.5">
+                    <div className={`text-[10px] leading-tight mt-0.5 ${!hasAvailableStock ? 'text-blue-100' : 'text-gray-500'}`}>
                       {t('order_wait_subtext', 'Hold and dispatch all items together once restocked')}
                     </div>
                   </div>
                 </div>
-                <span className="text-[11px] font-bold text-blue-700 px-2 py-0.5 rounded-md bg-blue-50 border border-blue-100">
+                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
+                  !hasAvailableStock
+                    ? 'bg-white/20 text-white border border-white/30'
+                    : 'text-blue-700 bg-blue-50 border border-blue-100'
+                }`}>
                   {totalRequestedQty} {t('order_units', 'units')}
                 </span>
               </button>
@@ -319,6 +344,9 @@ export default function OrderDetailPage({
                     </div>
                   </div>
                 </div>
+                <span className="text-[11px] text-red-600 font-medium px-2 py-0.5 rounded bg-red-50 border border-red-100">
+                  {t('order_cancel_action', 'Cancel')}
+                </span>
               </button>
             </div>
           </div>
