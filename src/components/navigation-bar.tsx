@@ -42,7 +42,7 @@ export function NavigationBar() {
   const isSettingsActive = pathname === "/settings" || pathname?.startsWith("/settings/");
 
   return (
-    <nav className="fixed bottom-3.5 left-0 right-0 z-50 px-3 max-w-md mx-auto flex items-center gap-2 pointer-events-none transition-all">
+    <nav className="fixed bottom-3.5 left-0 right-0 z-40 px-3 max-w-md mx-auto flex items-center gap-2 pointer-events-none transition-all">
       {/* Main Glassmorphic Dock Capsule */}
       <div className="pointer-events-auto flex-1 backdrop-blur-2xl bg-white/85 border border-white/80 shadow-[0_12px_40px_rgba(0,0,0,0.09)] rounded-[2.2rem] px-2 py-1.5 flex justify-around items-center">
         {navItems.map((item) => {

@@ -80,7 +80,7 @@ export function VariantSelectorSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center p-0 sm:p-4">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center p-0 sm:p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
@@ -90,7 +90,7 @@ export function VariantSelectorSheet({
 
       {/* Sheet Content */}
       <div
-        className="relative z-10 w-full max-w-lg bg-white rounded-t-[2rem] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in slide-in-from-bottom duration-300"
+        className="relative z-10 w-full max-w-lg bg-white rounded-t-[2rem] sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh] animate-in slide-in-from-bottom duration-300"
         role="dialog"
         aria-modal="true"
         aria-labelledby="variant-sheet-title"
@@ -158,7 +158,7 @@ export function VariantSelectorSheet({
         </div>
 
         {/* Scrollable Body */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-5">
+        <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-5 overscroll-contain">
           {/* Variant Selector */}
           {product.variants && product.variants.length > 0 && (
             <div className="space-y-2.5">
@@ -279,8 +279,8 @@ export function VariantSelectorSheet({
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="p-4 border-t border-neutral-100 bg-white">
+        {/* Footer Actions (Sticky Bottom with Safe Area Padding) */}
+        <div className="p-4 pb-8 sm:pb-4 border-t border-neutral-100 bg-white shrink-0 shadow-[0_-8px_20px_rgba(0,0,0,0.03)]">
           <button
             type="button"
             onClick={handleConfirmAdd}
