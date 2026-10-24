@@ -385,14 +385,14 @@ export default function OrderDetailPage({
                 {/* Quantity Breakdown Pills */}
                 <div className="flex items-center gap-1.5 text-[11px] pt-1">
                   <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-medium">
-                    Requested: <b>{item.requestedQuantity}</b>
+                    Requested: <b>{Number(item.requestedQuantity)}</b>
                   </span>
                   <span className="bg-emerald-50 px-2 py-0.5 rounded text-emerald-800 font-medium">
-                    Approved: <b>{item.approvedQuantity}</b>
+                    Approved: <b>{Number(item.approvedQuantity || 0)}</b>
                   </span>
                   {Number(item.waitingQuantity) > 0 && (
                     <span className="bg-amber-50 px-2 py-0.5 rounded text-amber-800 font-medium">
-                      Waiting: <b>{item.waitingQuantity}</b>
+                      Waiting: <b>{Number(item.waitingQuantity)}</b>
                     </span>
                   )}
                 </div>
