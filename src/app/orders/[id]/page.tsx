@@ -52,6 +52,45 @@ export default function OrderDetailPage({
     loadOrder();
   }, [loadOrder]);
 
+  const lastStaffQuestion = order?.messages
+    ?.slice()
+    .reverse()
+    .find((m) => m.senderType === 'STAFF');
+
+  const shortageItem = order?.items?.find((i) => Number(i.waitingQuantity || 0) > 0);
+  const targetItemId = (lastStaffQuestion?.metadata as { itemId?: string })?.itemId || shortageItem?.id;
+
+  const totalRequestedQty = (order?.items || []).reduce(
+    (sum, item) => sum + Number(item.requestedQuantity || 0),
+    0,
+  );
+
+  // Extract proposed quantity dynamically:
+  // 1. From metadata.proposedQuantity
+  // 2. From order items if approvedQuantity > 0
+  // 3. From text analysis of staff question (e.g. "have 10", "10 units", "only 10")
+  const proposedQty = (() => {
+    if (!order) return undefined;
+    const metaQty = Number((lastStaffQuestion?.metadata as { proposedQuantity?: number })?.proposedQuantity);
+    if (!isNaN(metaQty) && metaQty > 0) return metaQty;
+
+    const approvedItem = order.items?.find((i) => Number(i.approvedQuantity) > 0);
+    if (approvedItem && Number(approvedItem.approvedQuantity) > 0) {
+      return Number(approvedItem.approvedQuantity);
+    }
+
+    if (lastStaffQuestion?.message) {
+      const match = lastStaffQuestion.message.match(
+        /(?:only|have|accept|take|available|quantity of)?\s*(\b\d+\b)\s*(?:units?|pcs?|items?|available|left)?/i,
+      );
+      if (match && Number(match[1]) > 0 && Number(match[1]) <= totalRequestedQty) {
+        return Number(match[1]);
+      }
+    }
+
+    return undefined;
+  })();
+
   const handleAcceptSuggested = async (suggestedQty?: number) => {
     if (!order) return;
     setSubmittingAction(true);
@@ -61,6 +100,7 @@ export default function OrderDetailPage({
       await api.sendCustomerResponse(order.id, {
         responseType: 'ACCEPT',
         acceptedQuantity: suggestedQty,
+        itemId: targetItemId,
         message: suggestedQty
           ? `I accept the proposed quantity of ${suggestedQty} units.`
           : 'I confirm and accept.',
@@ -82,6 +122,7 @@ export default function OrderDetailPage({
     try {
       await api.sendCustomerResponse(order.id, {
         responseType: 'WAIT_STOCK',
+        itemId: targetItemId,
         message: `I choose to wait for all ${totalQty} units.`,
       });
       setReplySuccess(
@@ -137,42 +178,6 @@ export default function OrderDetailPage({
   }
 
   const isWaitingCustomer = order.status === 'WAITING_CUSTOMER';
-
-  // Find latest staff question if waiting customer
-  const lastStaffQuestion = order.messages
-    ?.slice()
-    .reverse()
-    .find((m) => m.senderType === 'STAFF');
-
-  const totalRequestedQty = (order.items || []).reduce(
-    (sum, item) => sum + Number(item.requestedQuantity || 0),
-    0,
-  );
-
-  // Extract proposed quantity dynamically:
-  // 1. From metadata.proposedQuantity
-  // 2. From order items if approvedQuantity > 0
-  // 3. From text analysis of staff question (e.g. "have 10", "10 units", "only 10")
-  const proposedQty = (() => {
-    const metaQty = Number(lastStaffQuestion?.metadata?.proposedQuantity);
-    if (!isNaN(metaQty) && metaQty > 0) return metaQty;
-
-    const approvedItem = order.items?.find((i) => Number(i.approvedQuantity) > 0);
-    if (approvedItem && Number(approvedItem.approvedQuantity) > 0) {
-      return Number(approvedItem.approvedQuantity);
-    }
-
-    if (lastStaffQuestion?.message) {
-      const match = lastStaffQuestion.message.match(
-        /(?:only|have|accept|take|available|quantity of)?\s*(\b\d+\b)\s*(?:units?|pcs?|items?|available|left)?/i,
-      );
-      if (match && Number(match[1]) > 0 && Number(match[1]) <= totalRequestedQty) {
-        return Number(match[1]);
-      }
-    }
-
-    return undefined;
-  })();
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 pb-20">
