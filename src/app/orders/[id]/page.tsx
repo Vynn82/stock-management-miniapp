@@ -15,7 +15,9 @@ import {
   Zap,
   Undo2,
   ArrowRight,
+  RefreshCw,
 } from 'lucide-react';
+import { OrderDetailSkeleton } from '@/components/order-detail-skeleton';
 import { useLanguage } from '@/context/language-context';
 import { useTelegram } from '@/context/telegram-context';
 import { api } from '@/lib/api';
@@ -28,30 +30,55 @@ export default function OrderDetailPage({
 }) {
   const router = useRouter();
   const routeParams = useParams();
-  const orderId = (params?.id || routeParams?.id || '') as string;
+  const rawId = params?.id || routeParams?.id;
+  const orderId = (Array.isArray(rawId) ? rawId[0] : rawId || '') as string;
 
-  const { hapticFeedback } = useTelegram();
+  const { authStatus, isReady, hapticFeedback } = useTelegram();
   const { t } = useLanguage();
 
   const [order, setOrder] = useState<CustomerOrder | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [submittingAction, setSubmittingAction] = useState(false);
   const [replySuccess, setReplySuccess] = useState<string | null>(null);
 
   const loadOrder = useCallback(async () => {
+    if (!orderId) return;
+    setLoading(true);
+    setFetchError(null);
     try {
       const data = await api.getMyOrder(orderId);
       setOrder(data);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Failed to load order:', err);
+      const msg = err instanceof Error ? err.message : 'Failed to load order';
+      setFetchError(msg);
     } finally {
       setLoading(false);
     }
   }, [orderId]);
 
   useEffect(() => {
-    loadOrder();
-  }, [loadOrder]);
+    if (!orderId) return;
+
+    const hasStoredToken =
+      typeof window !== 'undefined' && !!localStorage.getItem('tg_customer_token');
+
+    if (hasStoredToken) {
+      loadOrder();
+      return;
+    }
+
+    if (!isReady) return;
+
+    if (authStatus === 'ACTIVE') {
+      loadOrder();
+    } else if (authStatus === null) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }, [orderId, authStatus, isReady, loadOrder]);
 
   const lastStaffQuestion = order?.messages
     ?.slice()
@@ -165,22 +192,53 @@ export default function OrderDetailPage({
   };
 
   if (loading) {
+    return <OrderDetailSkeleton />;
+  }
+
+  if (fetchError && !order) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-        <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs text-gray-500">Loading order...</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] p-6 text-center">
+        <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+          <AlertCircle className="w-7 h-7" />
+        </div>
+        <h2 className="text-base font-bold text-gray-800">Unable to Load Order</h2>
+        <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto mb-5 leading-relaxed">
+          {fetchError}
+        </p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              hapticFeedback('medium');
+              loadOrder();
+            }}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold shadow-xs hover:bg-blue-700 active:scale-95 transition-all"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Try Again
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/orders')}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-200 active:scale-95 transition-all"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to My Orders
+          </button>
+        </div>
       </div>
     );
   }
 
   if (!order) {
     return (
-      <div className="p-8 text-center">
+      <div className="p-8 text-center min-h-[50vh] flex flex-col items-center justify-center">
         <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
         <h2 className="text-base font-bold text-gray-800">Order Not Found</h2>
+        <p className="text-xs text-gray-400 mt-1 max-w-xs">
+          This order does not exist or has been removed.
+        </p>
         <Link
           href="/orders"
-          className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 px-4 py-2 rounded-xl"
+          className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-xl active:scale-95 transition-all"
         >
           <ArrowLeft className="w-4 h-4" /> Back to My Orders
         </Link>

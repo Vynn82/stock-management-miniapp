@@ -153,13 +153,20 @@ export default function MyOrdersPage() {
   }, []);
 
   useEffect(() => {
-    if (!isReady) return;
-
     const hasStoredToken =
       typeof window !== "undefined" && !!localStorage.getItem("tg_customer_token");
 
-    if (authStatus === "ACTIVE" || hasStoredToken) {
+    if (hasStoredToken) {
       loadOrders();
+      return;
+    }
+
+    if (!isReady) return;
+
+    if (authStatus === "ACTIVE") {
+      loadOrders();
+    } else if (authStatus === null) {
+      setLoading(true);
     } else {
       setLoading(false);
     }
@@ -281,8 +288,21 @@ export default function MyOrdersPage() {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className="bg-white rounded-2xl p-4 border border-gray-200 animate-pulse h-28"
-              />
+                className="bg-white rounded-2xl p-4 border border-gray-200 space-y-3 shadow-xs animate-pulse"
+              >
+                <div className="flex justify-between items-center">
+                  <div className="w-32 h-4 bg-gray-200 rounded" />
+                  <div className="w-20 h-5 bg-gray-200 rounded-full" />
+                </div>
+                <div className="space-y-1.5">
+                  <div className="w-48 h-3.5 bg-gray-200 rounded" />
+                  <div className="w-28 h-3 bg-gray-200 rounded" />
+                </div>
+                <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
+                  <div className="w-24 h-3 bg-gray-200 rounded" />
+                  <div className="w-16 h-4 bg-gray-200 rounded" />
+                </div>
+              </div>
             ))}
           </div>
         ) : fetchError ? (
