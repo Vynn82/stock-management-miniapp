@@ -276,16 +276,36 @@ export default function OrderDetailPage({
               ? 'bg-gray-100 text-gray-700 border-gray-200'
               : order.status === 'WAITING_CUSTOMER'
                 ? 'bg-purple-100 text-purple-800 border-purple-200 animate-pulse'
-                : 'bg-blue-50 text-blue-700 border-blue-200'
+                : order.status === 'WAITING_STOCK'
+                  ? 'bg-orange-100 text-orange-800 border-orange-200'
+                  : 'bg-blue-50 text-blue-700 border-blue-200'
           }`}
         >
           {order.status === 'CANCELLED'
             ? 'Not Placed'
-            : order.status.replace(/_/g, ' ')}
+            : order.status === 'WAITING_STOCK'
+              ? 'Waiting Stock'
+              : order.status.replace(/_/g, ' ')}
         </span>
       </header>
 
       <div className="p-4 space-y-4">
+        {/* Waiting Stock Status Banner */}
+        {order.status === 'WAITING_STOCK' && (
+          <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-4 shadow-xs space-y-1.5">
+            <div className="flex items-center gap-2 text-orange-950 font-bold text-xs">
+              <Clock className="w-4 h-4 text-orange-600 shrink-0" />
+              <span>{t('order_waiting_stock_title', 'Order Queued: Waiting for Stock')}</span>
+            </div>
+            <p className="text-xs text-orange-900/80 leading-relaxed pl-6">
+              {t(
+                'order_waiting_stock_desc',
+                'Your order has been queued. As soon as incoming stock arrives, units will be automatically allocated to you and prepared for delivery.',
+              )}
+            </p>
+          </div>
+        )}
+
         {/* ACTION REQUIRED: Staff Question Interactive Card */}
         {isWaitingCustomer && (
           <div className="bg-gradient-to-b from-blue-50/80 to-indigo-50/30 border-2 border-blue-200/90 rounded-2xl p-4 shadow-sm space-y-3.5">

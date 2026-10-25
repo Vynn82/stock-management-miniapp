@@ -148,6 +148,8 @@ export const translations = {
     order_action_out_of_stock: "Action Required: Out of Stock",
     order_decision_needed: "Decision Needed",
     order_out_of_stock: "Out of Stock",
+    order_waiting_stock_title: "Order Queued: Waiting for Stock",
+    order_waiting_stock_desc: "Your order is queued. As soon as incoming stock arrives, units will be automatically allocated to you and prepared for delivery.",
     order_staff_question: "Notice from Store:",
     order_default_question:
       "We have limited stock available for this item. Would you like to accept the available units now, wait for a full restock, or go back without buying?",
@@ -357,6 +359,8 @@ export const translations = {
     order_action_out_of_stock: "ត្រូវការការសម្រេចចិត្ត៖ អស់ពីស្តុក",
     order_decision_needed: "ត្រូវការសម្រេចចិត្ត",
     order_out_of_stock: "អស់ពីស្តុក",
+    order_waiting_stock_title: "ការបញ្ជាទិញកំពុងរង់ចាំស្តុក",
+    order_waiting_stock_desc: "ការបញ្ជាទិញរបស់អ្នកត្រូវបានកត់ត្រាទុក។ នៅពេលទំនិញថ្មីមកដល់ ប្រព័ន្ធនឹងបែងចែកទំនិញជូនអ្នកដោយស្វ័យប្រវត្តិតាមចំនួនដែលបានកុម្ម៉ង់។",
     order_staff_question: "ដំណឹងពីហាង៖",
     order_default_question:
       "យើងខ្ញុំមានស្តុកកំណត់សម្រាប់ទំនិញនេះ។ តើអ្នកចង់ទទួលយកចំនួនដែលមានឥឡូវនេះ រង់ចាំការបំពេញស្តុកគ្រប់ចំនួន ឬមិនទិញ (ថយក្រោយ)?",
