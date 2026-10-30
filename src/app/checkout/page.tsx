@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  Award,
   Banknote,
   CheckCircle2,
   ShieldAlert,
@@ -20,7 +21,7 @@ import { api } from "@/lib/api";
 import { AuthGate } from "@/components/auth-gate";
 import { LocationMapPicker } from "@/components/location-map-picker";
 import { ProductImage } from "@/components/product-image";
-import { LocationData } from "@/types";
+import { LocationData, LoyaltyProfile } from "@/types";
 
 function CheckoutContent() {
   const router = useRouter();
@@ -44,6 +45,15 @@ function CheckoutContent() {
   const [remark, setRemark] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loyaltyProfile, setLoyaltyProfile] = useState<LoyaltyProfile | null>(null);
+
+  useEffect(() => {
+    api.getMyLoyaltyProfile().then(setLoyaltyProfile).catch(() => {});
+  }, []);
+
+  const discountRate = loyaltyProfile?.currentTier.discountPercent || 0;
+  const estimatedDiscount = Number(((totalAmount * discountRate) / 100).toFixed(2));
+  const finalTotalPayable = Math.max(0, Number((totalAmount - estimatedDiscount).toFixed(2)));
 
   useEffect(() => {
     const savedRemark = sessionStorage.getItem("tg_order_remark");
@@ -407,6 +417,15 @@ function CheckoutContent() {
                 ${totalAmount.toFixed(2)}
               </span>
             </div>
+            {discountRate > 0 && (
+              <div className="flex justify-between text-emerald-600 font-bold bg-emerald-50/80 px-2.5 py-1.5 rounded-xl border border-emerald-100">
+                <span className="flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5" />
+                  {loyaltyProfile?.currentTier.name} Discount ({discountRate}%)
+                </span>
+                <span>-${estimatedDiscount.toFixed(2)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-neutral-500">
               <span>Delivery Method</span>
               <span className="font-semibold text-emerald-600">
@@ -418,7 +437,7 @@ function CheckoutContent() {
                 Total Payable
               </span>
               <span className="text-lg font-black text-blue-600">
-                ${totalAmount.toFixed(2)}
+                ${finalTotalPayable.toFixed(2)}
               </span>
             </div>
           </div>

@@ -73,6 +73,10 @@ export interface CustomerOrderItem {
   approvedQuantity: number;
   waitingQuantity: number;
   unitPrice: number;
+  originalUnitPrice?: number | null;
+  discountPercent?: number;
+  discountAmount?: number;
+  isDiscountExcluded?: boolean;
   status: string;
   product?: {
     id: string;
@@ -113,6 +117,12 @@ export interface CustomerOrder {
   deliveryStatus: DeliveryStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: "CASH";
+  subtotalAmount?: number;
+  loyaltyDiscountPercent?: number;
+  loyaltyDiscountAmount?: number;
+  loyaltyTierId?: string | null;
+  loyaltyTierName?: string | null;
+  refundedAmount?: number;
   totalAmount: number;
   deliveryAddress?: string | null;
   latitude?: number | null;
@@ -203,3 +213,77 @@ export interface CustomerAuthResponse {
   customer?: CustomerProfile;
 }
 
+
+
+export interface LoyaltyTierSummary {
+  id: string;
+  name: string;
+  code: string;
+  tierRank: number;
+  discountPercent: number;
+  color?: string | null;
+  badgeIcon?: string | null;
+  description?: string | null;
+  isManualOverride?: boolean;
+  overrideExpiry?: string | Date | null;
+  overrideNotes?: string | null;
+}
+
+export interface ProductPurchaseHistory {
+  productId: string;
+  productName: string;
+  productCode?: string;
+  totalQuantity: number;
+  totalSpending: number;
+  orderCount: number;
+  firstPurchasedAt?: string | Date | null;
+  lastPurchasedAt?: string | Date | null;
+}
+
+export interface LoyaltyProfile {
+  customer: {
+    id: string;
+    contactName: string;
+    companyName?: string | null;
+    phone?: string | null;
+    telegramUsername?: string | null;
+  };
+  currentTier: LoyaltyTierSummary;
+  statistics: {
+    completedOrderCount: number;
+    lifetimeSpending: number;
+    totalQuantityPurchased: number;
+    averageOrderValue: number;
+    purchaseFrequencyDays: number;
+    firstOrderDate: string | Date | null;
+    latestOrderDate: string | Date | null;
+    totalDiscountsReceived: number;
+  };
+  progress: {
+    nextTier: {
+      id: string;
+      name: string;
+      code: string;
+      tierRank: number;
+      minOrders: number;
+      minSpending: number;
+      discountPercent: number;
+      color?: string | null;
+    } | null;
+    ordersNeeded: number;
+    spendingNeeded: number;
+    spendingProgressPercent: number;
+    ordersProgressPercent: number;
+    overallProgressPercent: number;
+  };
+  productHistory: ProductPurchaseHistory[];
+  recentDiscountedOrders: Array<{
+    orderId: string;
+    orderNo: string;
+    createdAt: string | Date;
+    subtotalAmount: number;
+    discountAmount: number;
+    totalAmount: number;
+    tierName?: string | null;
+  }>;
+}

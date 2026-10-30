@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   Building2,
+  Crown,
   Phone,
   MapPin,
   Navigation,
@@ -20,7 +21,8 @@ import {
 import { useTelegram } from "@/context/telegram-context";
 import { useLanguage } from "@/context/language-context";
 import { LocationMapPicker } from "@/components/location-map-picker";
-import { LocationData } from "@/types";
+import { LocationData, LoyaltyProfile } from "@/types";
+import { api } from "@/lib/api";
 import { LanguageFlag } from "@/components/language-flag";
 
 export default function SettingsPage() {
@@ -41,6 +43,13 @@ export default function SettingsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [loyaltyProfile, setLoyaltyProfile] = useState<LoyaltyProfile | null>(null);
+
+  React.useEffect(() => {
+    if (authStatus === "ACTIVE") {
+      api.getMyLoyaltyProfile().then(setLoyaltyProfile).catch(() => {});
+    }
+  }, [authStatus]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -174,6 +183,47 @@ export default function SettingsPage() {
             </div>
           )}
         </div>
+
+
+        {/* CUSTOMER LOYALTY SUMMARY CARD */}
+        {authStatus === "ACTIVE" && (
+          <Link
+            href="/loyalty"
+            onClick={() => hapticFeedback("light")}
+            className="block group active:scale-[0.98] transition-all"
+          >
+            <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white p-4 rounded-[1.6rem] shadow-lg shadow-blue-950/20 relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl pointer-events-none" />
+              <div className="relative z-10 flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <Crown className="w-4 h-4 text-amber-400" />
+                    <span className="text-[10px] font-extrabold tracking-widest uppercase text-blue-200">
+                      {t("loyalty_tier_badge")}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black tracking-tight text-white flex items-center gap-2">
+                    {loyaltyProfile?.currentTier.name || "Member"}
+                    {loyaltyProfile?.currentTier.discountPercent ? (
+                      <span className="text-xs font-black bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full">
+                        {loyaltyProfile.currentTier.discountPercent}% OFF
+                      </span>
+                    ) : null}
+                  </h3>
+                  <p className="text-[11px] text-blue-200/80">
+                    {loyaltyProfile?.progress.nextTier
+                      ? `${t("loyalty_next_tier_progress")}: ${loyaltyProfile.progress.overallProgressPercent}% to ${loyaltyProfile.progress.nextTier.name}`
+                      : "Maximum loyalty tier unlocked"}
+                  </p>
+                </div>
+
+                <div className="w-9 h-9 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 group-hover:translate-x-0.5 transition-transform">
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+          </Link>
+        )}
 
         {/* LANGUAGE SWITCHER CARD (Khmer & English) */}
         <div className="bg-white p-4 rounded-[1.6rem] border border-white shadow-[0_8px_24px_rgba(15,23,42,0.055)] space-y-3">

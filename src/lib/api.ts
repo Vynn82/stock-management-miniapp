@@ -4,6 +4,7 @@ import {
   CustomerOrder,
   CustomerProfile,
   Product,
+  LoyaltyProfile,
 } from '@/types';
 
 export function getApiBaseUrl(): string {
@@ -373,5 +374,8 @@ export const api = {
     return request<CustomerOrder>(`customer-orders/${orderId}/cancel`, {
       method: 'POST',
     });
+  },
+  async getMyLoyaltyProfile(): Promise<LoyaltyProfile> {
+    return request<LoyaltyProfile>('loyalty/my-profile');
   },
 };

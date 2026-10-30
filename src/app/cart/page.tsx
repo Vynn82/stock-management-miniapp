@@ -9,6 +9,7 @@ import {
   Minus,
   ArrowRight,
   ShoppingCart,
+  Award,
   Banknote,
 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
@@ -16,6 +17,8 @@ import { useTelegram } from "@/context/telegram-context";
 import { useLanguage } from "@/context/language-context";
 import { ProductImage } from "@/components/product-image";
 import { QuantityInput } from "@/components/quantity-input";
+import { LoyaltyProfile } from "@/types";
+import { api } from "@/lib/api";
 
 export default function CartPage() {
   const router = useRouter();
@@ -23,6 +26,17 @@ export default function CartPage() {
     useCart();
   const { authStatus, openRegistration, hapticFeedback } = useTelegram();
   const { t } = useLanguage();
+  const [loyaltyProfile, setLoyaltyProfile] = React.useState<LoyaltyProfile | null>(null);
+
+  React.useEffect(() => {
+    if (authStatus === "ACTIVE") {
+      api.getMyLoyaltyProfile().then(setLoyaltyProfile).catch(() => {});
+    }
+  }, [authStatus]);
+
+  const discountRate = loyaltyProfile?.currentTier.discountPercent || 0;
+  const estimatedDiscount = Number(((totalAmount * discountRate) / 100).toFixed(2));
+  const finalTotalDue = Math.max(0, Number((totalAmount - estimatedDiscount).toFixed(2)));
 
   if (items.length === 0) {
     return (
@@ -186,14 +200,23 @@ export default function CartPage() {
               ${totalAmount.toFixed(2)}
             </span>
           </div>
+          {discountRate > 0 && (
+            <div className="flex justify-between text-xs text-emerald-600 font-bold bg-emerald-50/80 px-2.5 py-1.5 rounded-xl border border-emerald-100">
+              <span className="flex items-center gap-1.5">
+                <Award className="w-3.5 h-3.5" />
+                {loyaltyProfile?.currentTier.name} Discount ({discountRate}%)
+              </span>
+              <span>-${estimatedDiscount.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-xs text-neutral-500">
             <span>{t("cart_payment_method")}</span>
             <span className="font-semibold text-neutral-800">{t("cart_cod_label")}</span>
           </div>
           <div className="pt-2 border-t border-neutral-100 flex justify-between items-baseline">
             <span className="text-sm font-black text-neutral-900">{t("cart_total_due")}</span>
-            <span className="text-xl font-black text-neutral-900">
-              ${totalAmount.toFixed(2)}
+            <span className="text-xl font-black text-blue-600">
+              ${finalTotalDue.toFixed(2)}
             </span>
           </div>
         </div>
