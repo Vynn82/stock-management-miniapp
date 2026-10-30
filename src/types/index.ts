@@ -122,7 +122,6 @@ export interface CustomerOrder {
   loyaltyDiscountAmount?: number;
   loyaltyTierId?: string | null;
   loyaltyTierName?: string | null;
-  refundedAmount?: number;
   totalAmount: number;
   deliveryAddress?: string | null;
   latitude?: number | null;
