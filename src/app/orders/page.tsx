@@ -13,6 +13,7 @@ import {
   RefreshCw,
   MapPin,
   Package,
+  Award,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useTelegram } from "@/context/telegram-context";
@@ -542,9 +543,17 @@ export default function MyOrdersPage() {
 
                 {/* Footer Row */}
                 <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-xs">
-                  <span className="text-gray-500 font-medium">
-                    {itemCount} {itemCount === 1 ? "item" : "items"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 font-medium">
+                      {itemCount} {itemCount === 1 ? "item" : "items"}
+                    </span>
+                    {order.loyaltyDiscountAmount !== undefined && Number(order.loyaltyDiscountAmount) > 0 && (
+                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1">
+                        <Award className="w-2.5 h-2.5 text-emerald-600" />
+                        Save ${Number(order.loyaltyDiscountAmount).toFixed(2)}
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1 text-gray-900 font-extrabold text-sm font-mono">
                     <span>${Number(order.totalAmount || 0).toFixed(2)}</span>
                     <ChevronRight className="w-4 h-4 text-gray-400" />

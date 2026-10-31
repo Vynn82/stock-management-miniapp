@@ -169,6 +169,11 @@ export const translations = {
     order_custom_msg_placeholder: "Type a reply to staff...",
     order_telegram_reply_hint: "You can also reply directly in your Telegram chat.",
     order_units: "units",
+    order_subtotal: "Subtotal",
+    order_discount: "Discount",
+    order_delivery_free: "Delivery (Free)",
+    order_total_due: "Total Payable",
+    order_free: "Free",
 
     // Settings
     settings_title: "Account & Settings",
@@ -403,6 +408,11 @@ export const translations = {
     order_custom_msg_placeholder: "សរសេរសារឆ្លើយតបទៅកាន់បុគ្គលិក...",
     order_telegram_reply_hint: "អ្នកក៏អាចឆ្លើយតបដោយផ្ទាល់នៅក្នុងការជជែក Telegram របស់អ្នកផងដែរ។",
     order_units: "ឯកតា",
+    order_subtotal: "តម្លៃទំនិញសរុប",
+    order_discount: "បញ្ចុះតម្លៃ",
+    order_delivery_free: "ដឹកជញ្ជូន (ឥតគិតថ្លៃ)",
+    order_total_due: "ទឹកប្រាក់ត្រូវទូទាត់សរុប",
+    order_free: "ឥតគិតថ្លៃ",
 
     // Settings
     settings_title: "គណនី & ការកំណត់",

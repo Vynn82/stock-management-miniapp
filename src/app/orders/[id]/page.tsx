@@ -16,6 +16,7 @@ import {
   Undo2,
   ArrowRight,
   RefreshCw,
+  Award,
 } from 'lucide-react';
 import { OrderDetailSkeleton } from '@/components/order-detail-skeleton';
 import { useLanguage } from '@/context/language-context';
@@ -524,44 +525,109 @@ export default function OrderDetailPage({
           </span>
 
           <div className="divide-y divide-gray-100">
-            {order.items.map((item) => (
-              <div key={item.id} className="py-2.5 space-y-1">
-                <div className="flex justify-between items-start text-xs">
-                  <div>
-                    <h3 className="font-bold text-gray-900">{item.product?.name}</h3>
-                    {item.variant && (
-                      <span className="text-[11px] text-blue-600 font-medium block">
-                        Variant: {item.variant.name}
+            {order.items.map((item) => {
+              const reqQty = Number(item.requestedQuantity || 0);
+              const unitP = Number(item.unitPrice || 0);
+              const origP = item.originalUnitPrice ? Number(item.originalUnitPrice) : unitP;
+              const hasItemDiscount = origP > unitP || (item.discountPercent !== undefined && item.discountPercent > 0);
+              const lineTotal = Number((unitP * reqQty).toFixed(2));
+              const lineOriginalTotal = Number((origP * reqQty).toFixed(2));
+
+              return (
+                <div key={item.id} className="py-2.5 space-y-1">
+                  <div className="flex justify-between items-start text-xs">
+                    <div className="pr-2">
+                      <h3 className="font-bold text-gray-900">{item.product?.name}</h3>
+                      {item.variant && (
+                        <span className="text-[11px] text-blue-600 font-medium block">
+                          Variant: {item.variant.name}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      {hasItemDiscount && origP > unitP && (
+                        <span className="text-[10px] text-gray-400 line-through block">
+                          ${lineOriginalTotal.toFixed(2)}
+                        </span>
+                      )}
+                      <span className="font-extrabold text-gray-900">
+                        ${lineTotal.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Quantity Breakdown Pills */}
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] pt-1">
+                    <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-medium">
+                      Requested: <b>{Number(item.requestedQuantity)}</b>
+                    </span>
+                    <span className="bg-emerald-50 px-2 py-0.5 rounded text-emerald-800 font-medium">
+                      Approved: <b>{Number(item.approvedQuantity || 0)}</b>
+                    </span>
+                    {Number(item.waitingQuantity) > 0 && (
+                      <span className="bg-amber-50 px-2 py-0.5 rounded text-amber-800 font-medium">
+                        Waiting: <b>{Number(item.waitingQuantity)}</b>
+                      </span>
+                    )}
+                    {item.discountPercent !== undefined && item.discountPercent > 0 && (
+                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                        -{item.discountPercent}%
                       </span>
                     )}
                   </div>
-                  <span className="font-extrabold text-gray-900">
-                    ${(Number(item.unitPrice) * Number(item.requestedQuantity)).toFixed(2)}
-                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Pricing & Loyalty Discount Breakdown */}
+          {(() => {
+            const loyaltyDiscount = Number(order.loyaltyDiscountAmount || 0);
+            const total = Number(order.totalAmount || 0);
+            const subtotal =
+              order.subtotalAmount !== undefined && Number(order.subtotalAmount) > 0
+                ? Number(order.subtotalAmount)
+                : Number((total + loyaltyDiscount).toFixed(2));
+            const hasDiscount = loyaltyDiscount > 0;
+
+            return (
+              <div className="pt-3 border-t border-gray-100 space-y-2 text-xs">
+                <div className="flex justify-between text-gray-500">
+                  <span>{t('order_subtotal', 'Subtotal')}</span>
+                  <span className="font-semibold text-gray-800">${subtotal.toFixed(2)}</span>
                 </div>
 
-                {/* Quantity Breakdown Pills */}
-                <div className="flex items-center gap-1.5 text-[11px] pt-1">
-                  <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-medium">
-                    Requested: <b>{Number(item.requestedQuantity)}</b>
-                  </span>
-                  <span className="bg-emerald-50 px-2 py-0.5 rounded text-emerald-800 font-medium">
-                    Approved: <b>{Number(item.approvedQuantity || 0)}</b>
-                  </span>
-                  {Number(item.waitingQuantity) > 0 && (
-                    <span className="bg-amber-50 px-2 py-0.5 rounded text-amber-800 font-medium">
-                      Waiting: <b>{Number(item.waitingQuantity)}</b>
+                {hasDiscount && (
+                  <div className="flex justify-between items-center text-emerald-700 font-bold bg-emerald-50/90 px-2.5 py-1.5 rounded-xl border border-emerald-100">
+                    <span className="flex items-center gap-1.5">
+                      <Award className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>
+                        {order.loyaltyTierName || 'Loyalty'} {t('order_discount', 'Discount')}
+                        {order.loyaltyDiscountPercent ? ` (${order.loyaltyDiscountPercent}%)` : ''}
+                      </span>
                     </span>
-                  )}
+                    <span className="font-extrabold text-emerald-700">
+                      -${loyaltyDiscount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex justify-between text-gray-500">
+                  <span>{t('order_delivery_free', 'Delivery')}</span>
+                  <span className="font-semibold text-emerald-600">{t('order_free', 'Free')}</span>
+                </div>
+
+                <div className="pt-2 border-t border-gray-100 flex justify-between items-baseline">
+                  <span className="text-sm font-black text-gray-900">
+                    {t('order_total_due', 'Total Payable')}
+                  </span>
+                  <span className="text-base font-black text-blue-600">
+                    ${total.toFixed(2)}
+                  </span>
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="pt-2 border-t border-gray-100 flex justify-between items-center text-sm font-extrabold text-gray-900">
-            <span>Total:</span>
-            <span className="text-blue-600 text-base">${Number(order.totalAmount).toFixed(2)}</span>
-          </div>
+            );
+          })()}
         </div>
       </div>
     </div>
