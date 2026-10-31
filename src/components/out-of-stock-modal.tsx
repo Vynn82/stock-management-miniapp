@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { PackageX, X, AlertCircle } from "lucide-react";
+import { PackageX, X } from "lucide-react";
 import { useTelegram } from "@/context/telegram-context";
 import { useLanguage } from "@/context/language-context";
 
