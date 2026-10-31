@@ -6,7 +6,6 @@ import Image from "next/image";
 import {
   Search,
   ShoppingCart,
-  ReceiptText,
   Sparkles,
   ChevronRight,
   Plus,
@@ -19,7 +18,7 @@ import { useTelegram } from "@/context/telegram-context";
 import { useCart } from "@/context/cart-context";
 import { useLanguage } from "@/context/language-context";
 import { api } from "@/lib/api";
-import { CustomerOrder, Product } from "@/types";
+import { Product } from "@/types";
 import { ProductImage } from "@/components/product-image";
 import { LanguageFlag } from "@/components/language-flag";
 import { VariantSelectorSheet } from "@/components/variant-selector-sheet";
@@ -36,7 +35,6 @@ export default function HomePage() {
   const { language, toggleLanguage, t } = useLanguage();
 
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [recentOrder, setRecentOrder] = useState<CustomerOrder | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProductForVariant, setSelectedProductForVariant] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,15 +68,8 @@ export default function HomePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [prods, orders] = await Promise.all([
-          api.getProducts({ limit: 6 }).catch(() => []),
-          api.getMyOrders({ limit: 1 }).catch(() => []),
-        ]);
-
+        const prods = await api.getProducts({ limit: 6 }).catch(() => []);
         setFeaturedProducts(prods);
-        if (orders && orders.length > 0) {
-          setRecentOrder(orders[0]);
-        }
       } catch (err) {
         console.error("Failed to load home data:", err);
       } finally {
@@ -268,56 +259,6 @@ export default function HomePage() {
                 </button>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Recent Order Card (Apple Wallet Style) */}
-        {recentOrder && (
-          <div>
-            <div className="flex justify-between items-center mb-2 px-1">
-              <h2 className="text-xs font-bold tracking-wider text-neutral-400 uppercase">
-                {t("home_recent_order")}
-              </h2>
-              <Link
-                href="/orders"
-                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
-              >
-                {t("orders_all")} →
-              </Link>
-            </div>
-            <Link
-              href={`/orders/${recentOrder.id}`}
-              className="block bg-white rounded-2xl border border-neutral-200/80 p-4 shadow-[0_4px_16px_rgba(0,0,0,0.03)] hover:shadow-md hover:border-blue-300 transition-all duration-300 ease-out active:scale-[0.99]"
-            >
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <ReceiptText className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-extrabold text-neutral-900 block">
-                      Order #{recentOrder.orderNo}
-                    </span>
-                    <span className="text-[10px] text-neutral-400">
-                      {new Date(recentOrder.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-
-                <span className="text-[10px] font-extrabold px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full border border-blue-200/60">
-                  {recentOrder.status.replace(/_/g, " ")}
-                </span>
-              </div>
-
-              <div className="mt-3 pt-2.5 border-t border-neutral-100 flex justify-between items-center text-xs">
-                <span className="text-neutral-500 font-medium">
-                  {recentOrder.items?.length || 0} {t("home_items")} &bull; ${Number(recentOrder.totalAmount).toFixed(2)}
-                </span>
-                <span className="text-blue-600 font-bold flex items-center gap-0.5 text-xs">
-                  {t("orders_view_details")} <ChevronRight className="w-3.5 h-3.5" />
-                </span>
-              </div>
-            </Link>
           </div>
         )}
 
