@@ -13,6 +13,7 @@ import {
   Building2,
   ArrowRight,
   Layers,
+  PackageX,
 } from "lucide-react";
 import { useTelegram } from "@/context/telegram-context";
 import { useCart } from "@/context/cart-context";
@@ -22,6 +23,7 @@ import { Product } from "@/types";
 import { ProductImage } from "@/components/product-image";
 import { LanguageFlag } from "@/components/language-flag";
 import { VariantSelectorSheet } from "@/components/variant-selector-sheet";
+import { OutOfStockModal } from "@/components/out-of-stock-modal";
 
 export default function HomePage() {
   const {
@@ -40,6 +42,8 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [addedId, setAddedId] = useState<string | null>(null);
   const [activeBanner, setActiveBanner] = useState(0);
+  const [outOfStockModalOpen, setOutOfStockModalOpen] = useState(false);
+  const [alertProduct, setAlertProduct] = useState<Product | null>(null);
 
   const banners = [
     {
@@ -84,6 +88,16 @@ export default function HomePage() {
     e.preventDefault();
     e.stopPropagation();
 
+    const productStock = Number(product.totalStock ?? 0);
+    const isOutOfStock = productStock <= 0;
+
+    if (isOutOfStock) {
+      hapticFeedback("warning");
+      setAlertProduct(product);
+      setOutOfStockModalOpen(true);
+      return;
+    }
+
     if (product.variants && product.variants.length > 0) {
       hapticFeedback("light");
       setSelectedProductForVariant(product);
@@ -98,6 +112,7 @@ export default function HomePage() {
       productCode: product.code,
       price: Number(product.price),
       image: product.image,
+      maxStock: productStock,
     });
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1400);
@@ -295,6 +310,7 @@ export default function HomePage() {
             <div className="grid grid-cols-2 gap-3.5">
               {featuredProducts.map((product) => {
                 const isJustAdded = addedId === product.id;
+                const isOutOfStock = (product.totalStock ?? 0) <= 0;
 
                 return (
                   <Link
@@ -305,12 +321,21 @@ export default function HomePage() {
                     <div>
                       {/* Product Image Frame */}
                       <div className="h-36 bg-[#f5f5f7] rounded-[1.25rem] relative overflow-hidden flex items-center justify-center p-3">
+                        {/* Out of Stock Overlay Badge */}
+                        {isOutOfStock && (
+                          <span className="absolute top-2 left-2 z-10 backdrop-blur-md bg-rose-600/90 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                            <PackageX className="w-3 h-3" />
+                            {t("stock_out_of_stock")}
+                          </span>
+                        )}
+
                         <ProductImage
                           src={product.image}
                           alt={product.name}
-                          className="w-full h-full object-contain group-hover:scale-[1.04] transition-transform duration-500 ease-out"
+                          className={`w-full h-full object-contain group-hover:scale-[1.04] transition-transform duration-500 ease-out ${
+                            isOutOfStock ? "opacity-60 saturate-50" : ""
+                          }`}
                         />
-
                       </div>
 
                       {/* Product Details */}
@@ -343,13 +368,21 @@ export default function HomePage() {
                         type="button"
                         onClick={(e) => handleQuickAdd(product, e)}
                         className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md active:scale-95 transition-all duration-300 ease-out ${
-                          isJustAdded
+                          isOutOfStock
+                            ? "bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/80 shadow-none"
+                            : isJustAdded
                             ? "bg-emerald-600 text-white rotate-0"
                             : "bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25"
                         }`}
-                        aria-label={`Add ${product.name} to cart`}
+                        aria-label={
+                          isOutOfStock
+                            ? `${product.name} is out of stock`
+                            : `Add ${product.name} to cart`
+                        }
                       >
-                        {isJustAdded ? (
+                        {isOutOfStock ? (
+                          <PackageX className="w-4 h-4 text-rose-600" />
+                        ) : isJustAdded ? (
                           <Check className="w-4 h-4 animate-in zoom-in-50" />
                         ) : (
                           <Plus className="w-4 h-4" />
@@ -376,6 +409,12 @@ export default function HomePage() {
             setTimeout(() => setAddedId(null), 1400);
           }
         }}
+      />
+
+      <OutOfStockModal
+        isOpen={outOfStockModalOpen}
+        onClose={() => setOutOfStockModalOpen(false)}
+        productName={alertProduct?.name}
       />
     </div>
   );

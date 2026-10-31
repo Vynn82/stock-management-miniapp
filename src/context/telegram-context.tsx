@@ -55,7 +55,7 @@ interface TelegramContextValue {
     commune?: string | null;
   }) => Promise<void>;
   hapticFeedback: (
-    type?: "light" | "medium" | "heavy" | "success" | "error",
+    type?: "light" | "medium" | "heavy" | "success" | "error" | "warning",
   ) => void;
   logout: () => void;
   closeApp: () => void;
@@ -136,11 +136,19 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
   }, [isReady, authStatus]);
 
   const hapticFeedback = useCallback(
-    (type: "light" | "medium" | "heavy" | "success" | "error" = "medium") => {
+    (
+      type:
+        | "light"
+        | "medium"
+        | "heavy"
+        | "success"
+        | "error"
+        | "warning" = "medium",
+    ) => {
       try {
         const tg = window.Telegram?.WebApp;
         if (!tg?.HapticFeedback) return;
-        if (type === "success" || type === "error") {
+        if (type === "success" || type === "error" || type === "warning") {
           tg.HapticFeedback.notificationOccurred(type);
         } else {
           tg.HapticFeedback.impactOccurred(type);

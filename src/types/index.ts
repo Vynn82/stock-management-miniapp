@@ -46,6 +46,7 @@ export interface CartItem {
   price: number;
   image?: string | null;
   quantity: number;
+  maxStock?: number;
 }
 
 export type CustomerOrderStatus =

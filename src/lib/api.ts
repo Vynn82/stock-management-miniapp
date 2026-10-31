@@ -160,7 +160,12 @@ function normalizeProduct(p: RawProduct): Product {
       ? { id: p.brand.id, name: p.brand.name }
       : undefined,
     variants,
-    totalStock: p.totalStock !== undefined ? Number(p.totalStock) : totalStock,
+    totalStock:
+      variants.length > 0
+        ? variants.reduce((sum: number, v) => sum + (Number(v.stock) || 0), 0)
+        : p.totalStock !== undefined && p.totalStock !== null
+        ? Number(p.totalStock)
+        : totalStock,
     isActive: p.isActive !== false,
   };
 }

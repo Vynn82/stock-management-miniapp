@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   ShoppingCart,
   Package,
+  PackageX,
   Plus,
   Minus,
   Check,
@@ -20,6 +21,7 @@ import { api } from "@/lib/api";
 import { Product, ProductVariant } from "@/types";
 import { ProductImage } from "@/components/product-image";
 import { QuantityInput } from "@/components/quantity-input";
+import { OutOfStockModal } from "@/components/out-of-stock-modal";
 
 export default function ProductDetailPage({
   params,
@@ -39,6 +41,9 @@ export default function ProductDetailPage({
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
+  const [outOfStockModalOpen, setOutOfStockModalOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState<string | undefined>(undefined);
+  const [alertMessage, setAlertMessage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     async function loadProduct() {
@@ -84,6 +89,11 @@ export default function ProductDetailPage({
     );
   }
 
+  const currentStock = selectedVariant
+    ? Number(selectedVariant.stock ?? 0)
+    : Number(product.totalStock ?? 0);
+  const isOutOfStock = currentStock <= 0;
+
   const activePrice = Number(
     selectedVariant?.price !== undefined && selectedVariant?.price !== null
       ? selectedVariant.price
@@ -93,6 +103,26 @@ export default function ProductDetailPage({
   const activeImage = selectedVariant?.image || product.image;
 
   const handleAddToCart = () => {
+    if (isOutOfStock) {
+      hapticFeedback("warning");
+      setAlertTitle(t("stock_alert_title"));
+      setAlertMessage(
+        selectedVariant
+          ? t("stock_alert_variant_message")
+          : t("stock_alert_message"),
+      );
+      setOutOfStockModalOpen(true);
+      return;
+    }
+
+    if (quantity > currentStock) {
+      hapticFeedback("warning");
+      setAlertTitle(t("stock_alert_title"));
+      setAlertMessage(t("stock_alert_insufficient"));
+      setOutOfStockModalOpen(true);
+      return;
+    }
+
     hapticFeedback("success");
     addToCart(
       {
@@ -100,9 +130,10 @@ export default function ProductDetailPage({
         variantId: selectedVariant?.id || null,
         productName: product.name,
         variantName: selectedVariant?.name || null,
-        productCode: product.code,
+        productCode: selectedVariant?.code || product.code,
         price: activePrice,
         image: activeImage,
+        maxStock: currentStock,
       },
       quantity,
     );
@@ -113,6 +144,27 @@ export default function ProductDetailPage({
 
   const handleOrderNow = () => {
     if (!product) return;
+
+    if (isOutOfStock) {
+      hapticFeedback("warning");
+      setAlertTitle(t("stock_alert_title"));
+      setAlertMessage(
+        selectedVariant
+          ? t("stock_alert_variant_message")
+          : t("stock_alert_message"),
+      );
+      setOutOfStockModalOpen(true);
+      return;
+    }
+
+    if (quantity > currentStock) {
+      hapticFeedback("warning");
+      setAlertTitle(t("stock_alert_title"));
+      setAlertMessage(t("stock_alert_insufficient"));
+      setOutOfStockModalOpen(true);
+      return;
+    }
+
     hapticFeedback("medium");
     addToCart(
       {
@@ -120,9 +172,10 @@ export default function ProductDetailPage({
         variantId: selectedVariant?.id || null,
         productName: product.name,
         variantName: selectedVariant?.name || null,
-        productCode: product.code,
+        productCode: selectedVariant?.code || product.code,
         price: activePrice,
         image: activeImage,
+        maxStock: currentStock,
       },
       quantity,
     );
@@ -166,12 +219,21 @@ export default function ProductDetailPage({
       {/* Main Image Showcase Stage */}
       <div className="px-4 pt-4">
         <div className="mx-auto w-full max-w-[520px] h-[340px] sm:h-[420px] relative flex items-center justify-center bg-white rounded-[2rem] border border-neutral-200/70 p-6 overflow-hidden">
+          {/* Out of Stock Overlay Badge on Image */}
+          {isOutOfStock && (
+            <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-600/90 backdrop-blur-md text-white text-xs font-black shadow-md tracking-wide">
+              <PackageX className="w-4 h-4" />
+              <span>{t("stock_out_of_stock")}</span>
+            </div>
+          )}
+
           <ProductImage
             src={activeImage}
             alt={product.name}
-            className="w-full h-full object-contain animate-in fade-in duration-300"
+            className={`w-full h-full object-contain animate-in fade-in duration-300 ${
+              isOutOfStock ? "opacity-60 saturate-50" : ""
+            }`}
           />
-
         </div>
       </div>
 
@@ -200,6 +262,21 @@ export default function ProductDetailPage({
             </div>
           </div>
 
+          {/* Stock Availability Indicator Badge */}
+          <div className="flex items-center gap-2 pt-0.5">
+            {isOutOfStock ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200/80">
+                <PackageX className="w-3.5 h-3.5" />
+                {t("stock_out_of_stock")}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                <Check className="w-3.5 h-3.5" />
+                {t("stock_in_stock")} ({currentStock} {t("stock_available")})
+              </span>
+            )}
+          </div>
+
           {product.description && (
             <p className="text-sm text-neutral-600 leading-relaxed pt-3 border-t border-neutral-200/70">
               {product.description}
@@ -216,6 +293,8 @@ export default function ProductDetailPage({
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {product.variants.map((v) => {
                 const isSelected = selectedVariant?.id === v.id;
+                const vStock = Number(v.stock ?? 0);
+                const vOutOfStock = vStock <= 0;
                 const vPrice = Number(
                   v.price !== undefined && v.price !== null
                     ? v.price
@@ -229,12 +308,17 @@ export default function ProductDetailPage({
                     onClick={() => {
                       hapticFeedback("light");
                       setSelectedVariant(v);
+                      if (vOutOfStock) {
+                        setQuantity(1);
+                      } else if (quantity > vStock) {
+                        setQuantity(Math.max(1, vStock));
+                      }
                     }}
                     className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] flex flex-col justify-between gap-1.5 ${
                       isSelected
                         ? "border-blue-600 bg-blue-50/80 shadow-xs ring-2 ring-blue-600/20"
                         : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
-                    }`}
+                    } ${vOutOfStock ? "opacity-75 bg-neutral-50/60" : ""}`}
                   >
                     <div className="flex items-start justify-between gap-1.5">
                       <span
@@ -258,6 +342,15 @@ export default function ProductDetailPage({
                       >
                         ${vPrice.toFixed(2)}
                       </span>
+                      <span
+                        className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${
+                          vOutOfStock
+                            ? "bg-rose-100 text-rose-700 font-bold"
+                            : "text-neutral-500 bg-neutral-100"
+                        }`}
+                      >
+                        {vOutOfStock ? t("stock_out_of_stock") : `${vStock}`}
+                      </span>
                     </div>
                   </button>
                 );
@@ -273,35 +366,50 @@ export default function ProductDetailPage({
               {t("detail_quantity")}
             </span>
             <span className="text-[11px] text-neutral-400">
-              Total: ${(activePrice * quantity).toFixed(2)}
+              {isOutOfStock
+                ? t("stock_out_of_stock")
+                : `Total: $${(activePrice * quantity).toFixed(2)} (${currentStock} ${t("stock_available")})`}
             </span>
           </div>
 
           <div className="flex items-center gap-2 bg-neutral-100 border border-neutral-200/60 rounded-xl p-1 shadow-inner">
             <button
               type="button"
+              disabled={isOutOfStock || quantity <= 1}
               onClick={() => {
                 hapticFeedback("light");
                 setQuantity((q) => Math.max(1, q - 1));
               }}
-              className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
+              className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               aria-label="Decrease quantity"
             >
               <Minus className="w-3.5 h-3.5" />
             </button>
             <QuantityInput
               value={quantity}
-              onChange={setQuantity}
+              onChange={(val) => {
+                if (isOutOfStock) return;
+                const clamped = Math.max(1, Math.min(val, Math.max(1, currentStock)));
+                setQuantity(clamped);
+              }}
               label={t("detail_quantity")}
               className="w-16 h-8"
             />
             <button
               type="button"
+              disabled={isOutOfStock || quantity >= currentStock}
               onClick={() => {
+                if (quantity >= currentStock) {
+                  hapticFeedback("warning");
+                  setAlertTitle(t("stock_alert_title"));
+                  setAlertMessage(t("stock_alert_insufficient"));
+                  setOutOfStockModalOpen(true);
+                  return;
+                }
                 hapticFeedback("light");
                 setQuantity((q) => q + 1);
               }}
-              className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
+              className="w-7 h-7 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               aria-label="Increase quantity"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -315,12 +423,19 @@ export default function ProductDetailPage({
             type="button"
             onClick={handleAddToCart}
             className={`flex-1 py-3 px-3 min-h-[46px] rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 ${
-              added
+              isOutOfStock
+                ? "bg-neutral-100 hover:bg-neutral-200 text-neutral-500 border border-neutral-200"
+                : added
                 ? "bg-emerald-600 text-white"
                 : "bg-neutral-100 hover:bg-neutral-200 text-neutral-900 border border-neutral-200/80"
             }`}
           >
-            {added ? (
+            {isOutOfStock ? (
+              <>
+                <PackageX className="w-4 h-4 text-rose-500" />
+                <span>{t("stock_out_of_stock")}</span>
+              </>
+            ) : added ? (
               <>
                 <Check className="w-4 h-4" /> {t("detail_added")}
               </>
@@ -334,12 +449,22 @@ export default function ProductDetailPage({
           <button
             type="button"
             onClick={handleOrderNow}
-            className="flex-1 py-3 px-3 min-h-[46px] rounded-xl font-black text-xs flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white transition-all active:scale-95"
+            className={`flex-1 py-3 px-3 min-h-[46px] rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
+              isOutOfStock
+                ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
+                : "bg-blue-600 hover:bg-blue-700 text-white"
+            }`}
           >
-            <span>{t("detail_order_now")}</span>
-            <span className="font-mono text-white/90">
-              (${(activePrice * quantity).toFixed(2)})
-            </span>
+            {isOutOfStock ? (
+              <span>{t("stock_out_of_stock")}</span>
+            ) : (
+              <>
+                <span>{t("detail_order_now")}</span>
+                <span className="font-mono text-white/90">
+                  (${(activePrice * quantity).toFixed(2)})
+                </span>
+              </>
+            )}
           </button>
         </div>
 
@@ -363,6 +488,15 @@ export default function ProductDetailPage({
         </div>
       </div>
 
+      {/* Out of Stock Alert Modal */}
+      <OutOfStockModal
+        isOpen={outOfStockModalOpen}
+        onClose={() => setOutOfStockModalOpen(false)}
+        title={alertTitle}
+        message={alertMessage}
+        productName={product.name}
+        variantName={selectedVariant?.name}
+      />
     </div>
   );
 }

@@ -60,11 +60,27 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       if (existingIndex > -1) {
         const updated = [...prev];
-        updated[existingIndex].quantity += quantity;
+        const existing = updated[existingIndex];
+        const max = product.maxStock ?? existing.maxStock;
+        let newQty = existing.quantity + quantity;
+        if (max !== undefined && max !== null && max >= 0) {
+          newQty = Math.min(newQty, max);
+        }
+        updated[existingIndex] = {
+          ...existing,
+          ...product,
+          quantity: newQty,
+          maxStock: max,
+        };
         return updated;
       }
 
-      return [...prev, { ...product, quantity }];
+      let initialQty = quantity;
+      if (product.maxStock !== undefined && product.maxStock !== null && product.maxStock >= 0) {
+        initialQty = Math.min(initialQty, product.maxStock);
+      }
+
+      return [...prev, { ...product, quantity: initialQty }];
     });
   };
 
@@ -88,7 +104,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           i.productId === productId &&
           (i.variantId || null) === (variantId || null)
         ) {
-          return { ...i, quantity };
+          let cappedQty = quantity;
+          if (i.maxStock !== undefined && i.maxStock !== null && i.maxStock >= 0) {
+            cappedQty = Math.min(cappedQty, i.maxStock);
+          }
+          return { ...i, quantity: cappedQty };
         }
         return i;
       });

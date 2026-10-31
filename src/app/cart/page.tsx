@@ -11,12 +11,14 @@ import {
   ShoppingCart,
   Award,
   Banknote,
+  PackageX,
 } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useTelegram } from "@/context/telegram-context";
 import { useLanguage } from "@/context/language-context";
 import { ProductImage } from "@/components/product-image";
 import { QuantityInput } from "@/components/quantity-input";
+import { OutOfStockModal } from "@/components/out-of-stock-modal";
 import { LoyaltyProfile } from "@/types";
 import { api } from "@/lib/api";
 
@@ -27,6 +29,8 @@ export default function CartPage() {
   const { authStatus, openRegistration, hapticFeedback } = useTelegram();
   const { t } = useLanguage();
   const [loyaltyProfile, setLoyaltyProfile] = React.useState<LoyaltyProfile | null>(null);
+  const [outOfStockModalOpen, setOutOfStockModalOpen] = React.useState(false);
+  const [alertMessage, setAlertMessage] = React.useState<string | undefined>(undefined);
 
   React.useEffect(() => {
     if (authStatus === "ACTIVE") {
@@ -58,7 +62,19 @@ export default function CartPage() {
     );
   }
 
+  const outOfStockItems = items.filter(
+    (item) => item.maxStock !== undefined && item.maxStock !== null && item.maxStock <= 0,
+  );
+
   const handleProceedToCheckout = () => {
+    if (outOfStockItems.length > 0) {
+      hapticFeedback("warning");
+      setAlertMessage(
+        `"${outOfStockItems[0].productName}" ${t("stock_alert_message")}`,
+      );
+      setOutOfStockModalOpen(true);
+      return;
+    }
     hapticFeedback("medium");
     if (authStatus === "REGISTRATION_REQUIRED") {
       openRegistration();
@@ -113,6 +129,12 @@ export default function CartPage() {
                         {t("detail_choose_variant")}: {item.variantName}
                       </span>
                     )}
+                    {item.maxStock !== undefined && item.maxStock !== null && item.maxStock <= 0 && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full mt-1 border border-rose-200">
+                        <PackageX className="w-3 h-3" />
+                        {t("stock_out_of_stock")}
+                      </span>
+                    )}
                   </div>
                   <button
                     type="button"
@@ -159,7 +181,22 @@ export default function CartPage() {
                     />
                     <button
                       type="button"
+                      disabled={
+                        item.maxStock !== undefined &&
+                        item.maxStock !== null &&
+                        item.quantity >= item.maxStock
+                      }
                       onClick={() => {
+                        if (
+                          item.maxStock !== undefined &&
+                          item.maxStock !== null &&
+                          item.quantity >= item.maxStock
+                        ) {
+                          hapticFeedback("warning");
+                          setAlertMessage(t("stock_alert_insufficient"));
+                          setOutOfStockModalOpen(true);
+                          return;
+                        }
                         hapticFeedback("light");
                         updateQuantity(
                           item.productId,
@@ -167,7 +204,7 @@ export default function CartPage() {
                           item.quantity + 1,
                         );
                       }}
-                      className="w-6 h-6 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all"
+                      className="w-6 h-6 rounded-lg bg-white shadow-xs flex items-center justify-center text-neutral-700 hover:text-neutral-900 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       aria-label="Increase quantity"
                     >
                       <Plus className="w-3 h-3" />
@@ -241,6 +278,12 @@ export default function CartPage() {
           </button>
         </div>
       </div>
+      {/* Out of Stock Alert Modal */}
+      <OutOfStockModal
+        isOpen={outOfStockModalOpen}
+        onClose={() => setOutOfStockModalOpen(false)}
+        message={alertMessage}
+      />
     </div>
   );
 }

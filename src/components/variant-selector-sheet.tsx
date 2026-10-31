@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Check, ShoppingCart, Plus, Minus, Layers } from "lucide-react";
+import { X, Check, ShoppingCart, Plus, Minus, Layers, PackageX } from "lucide-react";
 import { Product, ProductVariant, CartItem } from "@/types";
 import { ProductImage } from "./product-image";
 import { QuantityInput } from "./quantity-input";
+import { OutOfStockModal } from "./out-of-stock-modal";
 import { useTelegram } from "@/context/telegram-context";
 import { useLanguage } from "@/context/language-context";
 
@@ -27,6 +28,9 @@ export function VariantSelectorSheet({
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [isAdded, setIsAdded] = useState(false);
+  const [outOfStockModalOpen, setOutOfStockModalOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState<string | undefined>(undefined);
+  const [alertMessage, setAlertMessage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
@@ -40,6 +44,11 @@ export function VariantSelectorSheet({
 
   if (!isOpen || !product) return null;
 
+  const selectedStock = selectedVariant
+    ? Number(selectedVariant.stock ?? 0)
+    : Number(product.totalStock ?? 0);
+  const isVariantOutOfStock = selectedStock <= 0;
+
   const activePrice = Number(
     selectedVariant?.price !== undefined && selectedVariant?.price !== null
       ? selectedVariant.price
@@ -50,6 +59,22 @@ export function VariantSelectorSheet({
   const subtotal = activePrice * quantity;
 
   const handleConfirmAdd = () => {
+    if (isVariantOutOfStock) {
+      hapticFeedback("warning");
+      setAlertTitle(t("stock_alert_title"));
+      setAlertMessage(t("stock_alert_variant_message"));
+      setOutOfStockModalOpen(true);
+      return;
+    }
+
+    if (quantity > selectedStock) {
+      hapticFeedback("warning");
+      setAlertTitle(t("stock_alert_title"));
+      setAlertMessage(t("stock_alert_insufficient"));
+      setOutOfStockModalOpen(true);
+      return;
+    }
+
     hapticFeedback("success");
     setIsAdded(true);
 
@@ -62,6 +87,7 @@ export function VariantSelectorSheet({
         productCode: selectedVariant?.code || product.code,
         price: activePrice,
         image: activeImage,
+        maxStock: selectedStock,
       },
       quantity,
     );
@@ -154,6 +180,8 @@ export function VariantSelectorSheet({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {product.variants.map((v) => {
                   const isSelected = selectedVariant?.id === v.id;
+                  const vStock = Number(v.stock ?? 0);
+                  const vOutOfStock = vStock <= 0;
                   const vPrice = Number(
                     v.price !== undefined && v.price !== null
                       ? v.price
@@ -167,12 +195,17 @@ export function VariantSelectorSheet({
                       onClick={() => {
                         hapticFeedback("light");
                         setSelectedVariant(v);
+                        if (vOutOfStock) {
+                          setQuantity(1);
+                        } else if (quantity > vStock) {
+                          setQuantity(Math.max(1, vStock));
+                        }
                       }}
                       className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] flex flex-col justify-between gap-1.5 ${
                         isSelected
                           ? "border-blue-600 bg-blue-50/70 shadow-xs ring-2 ring-blue-600/20"
                           : "border-neutral-200 hover:border-neutral-300 bg-white"
-                      }`}
+                      } ${vOutOfStock ? "opacity-75 bg-neutral-50/60" : ""}`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <span
@@ -197,6 +230,17 @@ export function VariantSelectorSheet({
                         >
                           ${vPrice.toFixed(2)}
                         </span>
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                            vOutOfStock
+                              ? "bg-rose-100 text-rose-700 font-bold"
+                              : "text-neutral-500 bg-neutral-100"
+                          }`}
+                        >
+                          {vOutOfStock
+                            ? t("stock_out_of_stock")
+                            : `${vStock} ${t("stock_available")}`}
+                        </span>
                       </div>
                     </button>
                   );
@@ -212,35 +256,65 @@ export function VariantSelectorSheet({
                 {t("detail_quantity")}
               </span>
               <span className="text-[11px] text-neutral-500 font-medium">
-                Subtotal: <strong className="text-neutral-900 font-bold">${subtotal.toFixed(2)}</strong>
+                {isVariantOutOfStock ? (
+                  <span className="text-rose-600 font-bold">
+                    {t("stock_out_of_stock")}
+                  </span>
+                ) : (
+                  <>
+                    Subtotal:{" "}
+                    <strong className="text-neutral-900 font-bold">
+                      ${subtotal.toFixed(2)}
+                    </strong>{" "}
+                    <span className="text-neutral-400">
+                      ({selectedStock} {t("stock_available")})
+                    </span>
+                  </>
+                )}
               </span>
             </div>
 
             <div className="flex items-center gap-2 bg-white border border-neutral-200 rounded-xl p-1 shadow-xs">
               <button
                 type="button"
+                disabled={isVariantOutOfStock || quantity <= 1}
                 onClick={() => {
                   hapticFeedback("light");
                   setQuantity((q) => Math.max(1, q - 1));
                 }}
-                className="w-7 h-7 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 active:scale-90 transition-all"
+                className="w-7 h-7 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Decrease quantity"
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
               <QuantityInput
                 value={quantity}
-                onChange={setQuantity}
+                onChange={(val) => {
+                  if (isVariantOutOfStock) return;
+                  const clamped = Math.max(
+                    1,
+                    Math.min(val, Math.max(1, selectedStock)),
+                  );
+                  setQuantity(clamped);
+                }}
                 label={t("detail_quantity")}
                 className="w-14 h-7 text-xs font-bold"
               />
               <button
                 type="button"
+                disabled={isVariantOutOfStock || quantity >= selectedStock}
                 onClick={() => {
+                  if (quantity >= selectedStock) {
+                    hapticFeedback("warning");
+                    setAlertTitle(t("stock_alert_title"));
+                    setAlertMessage(t("stock_alert_insufficient"));
+                    setOutOfStockModalOpen(true);
+                    return;
+                  }
                   hapticFeedback("light");
                   setQuantity((q) => q + 1);
                 }}
-                className="w-7 h-7 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 active:scale-90 transition-all"
+                className="w-7 h-7 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Increase quantity"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -255,12 +329,19 @@ export function VariantSelectorSheet({
             type="button"
             onClick={handleConfirmAdd}
             className={`w-full py-3.5 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] ${
-              isAdded
+              isVariantOutOfStock
+                ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
+                : isAdded
                 ? "bg-emerald-600 text-white shadow-emerald-500/20"
                 : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25"
             }`}
           >
-            {isAdded ? (
+            {isVariantOutOfStock ? (
+              <>
+                <PackageX className="w-4 h-4 text-rose-500" />
+                <span>{t("stock_out_of_stock")}</span>
+              </>
+            ) : isAdded ? (
               <>
                 <Check className="w-4 h-4 animate-in zoom-in-75" />
                 <span>{t("detail_added")}!</span>
@@ -276,6 +357,16 @@ export function VariantSelectorSheet({
           </button>
         </div>
       </div>
+
+      {/* Out of Stock Alert Modal inside sheet */}
+      <OutOfStockModal
+        isOpen={outOfStockModalOpen}
+        onClose={() => setOutOfStockModalOpen(false)}
+        title={alertTitle}
+        message={alertMessage}
+        productName={product.name}
+        variantName={selectedVariant?.name}
+      />
     </div>
   );
 }

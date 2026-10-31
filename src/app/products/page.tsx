@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Search, Boxes, Plus, Check, X } from "lucide-react";
+import { Search, Boxes, Plus, Check, X, PackageX } from "lucide-react";
 import { useCart } from "@/context/cart-context";
 import { useTelegram } from "@/context/telegram-context";
 import { useLanguage } from "@/context/language-context";
@@ -11,6 +11,7 @@ import { api } from "@/lib/api";
 import { Category, Product } from "@/types";
 import { ProductImage } from "@/components/product-image";
 import { VariantSelectorSheet } from "@/components/variant-selector-sheet";
+import { OutOfStockModal } from "@/components/out-of-stock-modal";
 
 function ProductsListContent() {
   const searchParams = useSearchParams();
@@ -28,6 +29,8 @@ function ProductsListContent() {
   const [search, setSearch] = useState(initialSearch);
   const [loading, setLoading] = useState(true);
   const [addedId, setAddedId] = useState<string | null>(null);
+  const [outOfStockModalOpen, setOutOfStockModalOpen] = useState(false);
+  const [alertProduct, setAlertProduct] = useState<Product | null>(null);
 
   const loadProducts = useCallback(async () => {
     setLoading(true);
@@ -56,6 +59,16 @@ function ProductsListContent() {
     e.preventDefault();
     e.stopPropagation();
 
+    const productStock = Number(product.totalStock ?? 0);
+    const isOutOfStock = productStock <= 0;
+
+    if (isOutOfStock) {
+      hapticFeedback("warning");
+      setAlertProduct(product);
+      setOutOfStockModalOpen(true);
+      return;
+    }
+
     if (product.variants && product.variants.length > 0) {
       hapticFeedback("light");
       setSelectedProductForVariant(product);
@@ -70,6 +83,7 @@ function ProductsListContent() {
       productCode: product.code,
       price: Number(product.price),
       image: product.image,
+      maxStock: productStock,
     });
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1400);
@@ -188,6 +202,7 @@ function ProductsListContent() {
             {products.map((product) => {
               const isJustAdded = addedId === product.id;
               const hasVariants = product.variants && product.variants.length > 0;
+              const isOutOfStock = (product.totalStock ?? 0) <= 0;
 
               return (
                 <Link
@@ -198,10 +213,20 @@ function ProductsListContent() {
                   <div>
                     {/* Image Card Frame */}
                     <div className="h-40 sm:h-52 bg-[#f5f5f7] rounded-[1.25rem] relative overflow-hidden flex items-center justify-center p-3">
+                      {/* Out of Stock Overlay Badge */}
+                      {isOutOfStock && (
+                        <span className="absolute top-2 left-2 z-10 backdrop-blur-md bg-rose-600/90 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+                          <PackageX className="w-3 h-3" />
+                          {t("stock_out_of_stock")}
+                        </span>
+                      )}
+
                       <ProductImage
                         src={product.image}
                         alt={product.name}
-                        className="w-full h-full object-contain group-hover:scale-[1.04] transition-transform duration-500 ease-out"
+                        className={`w-full h-full object-contain group-hover:scale-[1.04] transition-transform duration-500 ease-out ${
+                          isOutOfStock ? "opacity-60 saturate-50" : ""
+                        }`}
                       />
 
                       {/* Variant Badge */}
@@ -236,13 +261,21 @@ function ProductsListContent() {
                       type="button"
                       onClick={(e) => handleQuickAdd(product, e)}
                       className={`w-9 h-9 rounded-full flex items-center justify-center shadow-md active:scale-95 transition-all duration-300 ease-out ${
-                        isJustAdded
+                        isOutOfStock
+                          ? "bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/80 shadow-none"
+                          : isJustAdded
                           ? "bg-emerald-600 text-white rotate-0"
                           : "bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25"
                       }`}
-                      aria-label={`Add ${product.name} to cart`}
+                      aria-label={
+                        isOutOfStock
+                          ? `${product.name} is out of stock`
+                          : `Add ${product.name} to cart`
+                      }
                     >
-                      {isJustAdded ? (
+                      {isOutOfStock ? (
+                        <PackageX className="w-4 h-4 text-rose-600" />
+                      ) : isJustAdded ? (
                         <Check className="w-4 h-4 animate-in zoom-in-50" />
                       ) : (
                         <Plus className="w-4 h-4" />
@@ -267,6 +300,12 @@ function ProductsListContent() {
             setTimeout(() => setAddedId(null), 1400);
           }
         }}
+      />
+
+      <OutOfStockModal
+        isOpen={outOfStockModalOpen}
+        onClose={() => setOutOfStockModalOpen(false)}
+        productName={alertProduct?.name}
       />
     </div>
   );
