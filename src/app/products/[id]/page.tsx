@@ -51,7 +51,9 @@ export default function ProductDetailPage({
         const data = await api.getProduct(productId);
         setProduct(data);
         if (data.variants && data.variants.length > 0) {
-          setSelectedVariant(data.variants[0]);
+          const firstInStock =
+            data.variants.find((v) => (v.stock ?? 0) > 0) || data.variants[0];
+          setSelectedVariant(firstInStock);
         }
       } catch (err) {
         console.error("Failed to load product:", err);
