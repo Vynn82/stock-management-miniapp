@@ -27,18 +27,53 @@ export function VariantSelectorSheet({
 
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [variantQuantities, setVariantQuantities] = useState<Record<string, number>>({});
   const [isAdded, setIsAdded] = useState(false);
   const [outOfStockModalOpen, setOutOfStockModalOpen] = useState(false);
   const [alertTitle, setAlertTitle] = useState<string | undefined>(undefined);
   const [alertMessage, setAlertMessage] = useState<string | undefined>(undefined);
 
+  const updateQuantity = (newQty: number) => {
+    setQuantity(newQty);
+    if (selectedVariant?.id) {
+      setVariantQuantities((prev) => ({
+        ...prev,
+        [selectedVariant.id]: newQty,
+      }));
+    }
+  };
+
+  const handleSelectVariant = (v: ProductVariant) => {
+    hapticFeedback("light");
+    if (selectedVariant?.id === v.id) return;
+
+    // Save current variant's quantity before switching
+    if (selectedVariant?.id) {
+      setVariantQuantities((prev) => ({
+        ...prev,
+        [selectedVariant.id]: quantity,
+      }));
+    }
+
+    setSelectedVariant(v);
+
+    const vStock = Number(v.stock ?? 0);
+    // If the user previously selected this variant, restore its quantity; otherwise default to 1
+    const savedQty = variantQuantities[v.id] ?? 1;
+    const nextQty = vStock > 0 ? Math.max(1, Math.min(savedQty, vStock)) : 1;
+    setQuantity(nextQty);
+  };
+
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
-      setSelectedVariant(product.variants[0]);
+      const firstInStock =
+        product.variants.find((v) => (v.stock ?? 0) > 0) || product.variants[0];
+      setSelectedVariant(firstInStock);
     } else {
       setSelectedVariant(null);
     }
     setQuantity(1);
+    setVariantQuantities({});
     setIsAdded(false);
   }, [product]);
 
@@ -192,15 +227,7 @@ export function VariantSelectorSheet({
                     <button
                       key={v.id}
                       type="button"
-                      onClick={() => {
-                        hapticFeedback("light");
-                        setSelectedVariant(v);
-                        if (vOutOfStock) {
-                          setQuantity(1);
-                        } else if (quantity > vStock) {
-                          setQuantity(Math.max(1, vStock));
-                        }
-                      }}
+                      onClick={() => handleSelectVariant(v)}
                       className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] flex flex-col justify-between gap-1.5 ${
                         isSelected
                           ? "border-blue-600 bg-blue-50/70 shadow-xs ring-2 ring-blue-600/20"
@@ -280,7 +307,7 @@ export function VariantSelectorSheet({
                 disabled={isVariantOutOfStock || quantity <= 1}
                 onClick={() => {
                   hapticFeedback("light");
-                  setQuantity((q) => Math.max(1, q - 1));
+                  updateQuantity(Math.max(1, quantity - 1));
                 }}
                 className="w-7 h-7 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Decrease quantity"
@@ -295,7 +322,7 @@ export function VariantSelectorSheet({
                     1,
                     Math.min(val, Math.max(1, selectedStock)),
                   );
-                  setQuantity(clamped);
+                  updateQuantity(clamped);
                 }}
                 label={t("detail_quantity")}
                 className="w-14 h-7 text-xs font-bold"
@@ -312,7 +339,7 @@ export function VariantSelectorSheet({
                     return;
                   }
                   hapticFeedback("light");
-                  setQuantity((q) => q + 1);
+                  updateQuantity(quantity + 1);
                 }}
                 className="w-7 h-7 rounded-lg bg-neutral-100 hover:bg-neutral-200 flex items-center justify-center text-neutral-700 active:scale-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 aria-label="Increase quantity"

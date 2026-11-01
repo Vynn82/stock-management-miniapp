@@ -368,21 +368,13 @@ export default function HomePage() {
                         type="button"
                         onClick={(e) => handleQuickAdd(product, e)}
                         className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md active:scale-95 transition-all duration-300 ease-out ${
-                          isOutOfStock
-                            ? "bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/80 shadow-none"
-                            : isJustAdded
+                          isJustAdded
                             ? "bg-emerald-600 text-white rotate-0"
                             : "bg-gradient-to-tr from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25"
                         }`}
-                        aria-label={
-                          isOutOfStock
-                            ? `${product.name} is out of stock`
-                            : `Add ${product.name} to cart`
-                        }
+                        aria-label={`Add ${product.name} to cart`}
                       >
-                        {isOutOfStock ? (
-                          <PackageX className="w-4 h-4 text-rose-600" />
-                        ) : isJustAdded ? (
+                        {isJustAdded ? (
                           <Check className="w-4 h-4 animate-in zoom-in-50" />
                         ) : (
                           <Plus className="w-4 h-4" />
