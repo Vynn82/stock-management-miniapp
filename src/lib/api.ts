@@ -333,6 +333,11 @@ export const api = {
       quantity: number;
     }[];
     deliveryAddress?: string;
+    latitude?: number;
+    longitude?: number;
+    province?: string;
+    district?: string;
+    commune?: string;
     remark?: string;
   }): Promise<CustomerOrder> {
     return request<CustomerOrder>('customer-orders', {

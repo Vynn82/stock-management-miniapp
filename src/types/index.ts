@@ -135,10 +135,11 @@ export interface CustomerOrder {
   updatedAt: string;
   customer?: {
     id: string;
-    firstName: string;
-    lastName: string | null;
-    companyName: string | null;
-    telegramUsername: string | null;
+    contactName?: string | null;
+    companyName?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    telegramUsername?: string | null;
   };
   items: CustomerOrderItem[];
   messages?: CustomerOrderMessage[];

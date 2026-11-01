@@ -115,6 +115,26 @@ function CheckoutContent() {
         finalRemark = finalRemark ? `${finalRemark} | ${pinText}` : pinText;
       }
 
+      const latitude = isCustom
+        ? (customLat ?? undefined)
+        : customer?.latitude !== null && customer?.latitude !== undefined
+          ? Number(customer.latitude)
+          : undefined;
+      const longitude = isCustom
+        ? (customLng ?? undefined)
+        : customer?.longitude !== null && customer?.longitude !== undefined
+          ? Number(customer.longitude)
+          : undefined;
+      const province = isCustom
+        ? (customProvince ?? undefined)
+        : (customer?.province ?? undefined);
+      const district = isCustom
+        ? (customDistrict ?? undefined)
+        : (customer?.district ?? undefined);
+      const commune = isCustom
+        ? (customCommune ?? undefined)
+        : (customer?.commune ?? undefined);
+
       const orderPayload = {
         items: items.map((item) => ({
           productId: item.productId,
@@ -122,6 +142,11 @@ function CheckoutContent() {
           quantity: item.quantity,
         })),
         deliveryAddress: deliveryAddress || undefined,
+        latitude,
+        longitude,
+        province,
+        district,
+        commune,
         remark: finalRemark || undefined,
       };
 

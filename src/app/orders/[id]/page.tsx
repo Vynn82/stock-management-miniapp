@@ -17,6 +17,11 @@ import {
   ArrowRight,
   RefreshCw,
   Award,
+  MapPin,
+  User,
+  ExternalLink,
+  FileText,
+  Phone,
 } from 'lucide-react';
 import { OrderDetailSkeleton } from '@/components/order-detail-skeleton';
 import { useLanguage } from '@/context/language-context';
@@ -516,6 +521,86 @@ export default function OrderDetailPage({
           <p className="text-[11px] text-gray-400 pt-1">
             💵 Payment is collected in cash when delivery arrives at your location.
           </p>
+        </div>
+
+        {/* Delivery Location & Customer Information Card */}
+        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+              Delivery Location & Contact
+            </span>
+            {order.latitude && order.longitude && (
+              <a
+                href={`https://maps.google.com/?q=${Number(order.latitude).toFixed(6)},${Number(order.longitude).toFixed(6)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-lg"
+              >
+                <MapPin className="w-3 h-3" />
+                <span>Google Maps</span>
+                <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            )}
+          </div>
+
+          <div className="space-y-2 text-xs">
+            {/* Address */}
+            <div className="flex items-start gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                <MapPin className="w-3.5 h-3.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] text-gray-400 font-medium block">Delivery Address</span>
+                <p className="font-semibold text-gray-800 leading-snug">
+                  {order.deliveryAddress || 'Standard Profile Address'}
+                </p>
+                {(() => {
+                  const area = [order.commune, order.district, order.province].filter(Boolean).join(', ');
+                  return area ? <p className="text-[11px] text-gray-500 mt-0.5">{area}</p> : null;
+                })()}
+                {order.latitude && order.longitude && (
+                  <p className="text-[10px] font-mono text-gray-400 mt-0.5">
+                    Pin: {Number(order.latitude).toFixed(6)}, {Number(order.longitude).toFixed(6)}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Customer Contact */}
+            {(order.customer?.contactName || order.customer?.companyName || order.customer?.phone) && (
+              <div className="flex items-start gap-2.5 pt-2 border-t border-gray-100">
+                <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <User className="w-3.5 h-3.5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[10px] text-gray-400 font-medium block">Recipient / Contact</span>
+                  <p className="font-semibold text-gray-800">
+                    {order.customer?.contactName || order.customer?.companyName}
+                    {order.customer?.companyName && order.customer?.contactName ? ` (${order.customer.companyName})` : ''}
+                  </p>
+                  {order.customer?.phone && (
+                    <p className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1">
+                      <Phone className="w-3 h-3 text-gray-400" />
+                      {order.customer.phone}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Note / Remark */}
+            {order.remark && (
+              <div className="flex items-start gap-2.5 pt-2 border-t border-gray-100">
+                <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <FileText className="w-3.5 h-3.5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-[10px] text-gray-400 font-medium block">Delivery Note</span>
+                  <p className="text-gray-700 italic">{order.remark}</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Ordered Items List */}
