@@ -449,19 +449,12 @@ export default function ProductDetailPage({
             type="button"
             onClick={handleAddToCart}
             className={`flex-1 py-3 px-3 min-h-[46px] rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-95 ${
-              isOutOfStock
-                ? "bg-neutral-100 hover:bg-neutral-200 text-neutral-500 border border-neutral-200"
-                : added
+              added
                 ? "bg-emerald-600 text-white"
                 : "bg-neutral-100 hover:bg-neutral-200 text-neutral-900 border border-neutral-200/80"
             }`}
           >
-            {isOutOfStock ? (
-              <>
-                <PackageX className="w-4 h-4 text-rose-500" />
-                <span>{t("stock_out_of_stock")}</span>
-              </>
-            ) : added ? (
+            {added ? (
               <>
                 <Check className="w-4 h-4" /> {t("detail_added")}
               </>
@@ -475,22 +468,12 @@ export default function ProductDetailPage({
           <button
             type="button"
             onClick={handleOrderNow}
-            className={`flex-1 py-3 px-3 min-h-[46px] rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 ${
-              isOutOfStock
-                ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
-            }`}
+            className="flex-1 py-3 px-3 min-h-[46px] rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 bg-blue-600 hover:bg-blue-700 text-white"
           >
-            {isOutOfStock ? (
-              <span>{t("stock_out_of_stock")}</span>
-            ) : (
-              <>
-                <span>{t("detail_order_now")}</span>
-                <span className="font-mono text-white/90">
-                  (${(activePrice * quantity).toFixed(2)})
-                </span>
-              </>
-            )}
+            <span>{t("detail_order_now")}</span>
+            <span className="font-mono text-white/90">
+              (${(activePrice * quantity).toFixed(2)})
+            </span>
           </button>
         </div>
 

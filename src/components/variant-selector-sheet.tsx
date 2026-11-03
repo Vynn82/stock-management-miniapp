@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Check, ShoppingCart, Plus, Minus, Layers, PackageX } from "lucide-react";
+import { X, Check, ShoppingCart, Plus, Minus, Layers } from "lucide-react";
 import { Product, ProductVariant, CartItem } from "@/types";
 import { ProductImage } from "./product-image";
 import { QuantityInput } from "./quantity-input";
@@ -356,19 +356,12 @@ export function VariantSelectorSheet({
             type="button"
             onClick={handleConfirmAdd}
             className={`w-full py-3.5 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] ${
-              isVariantOutOfStock
-                ? "bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200"
-                : isAdded
+              isAdded
                 ? "bg-emerald-600 text-white shadow-emerald-500/20"
                 : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-blue-500/25"
             }`}
           >
-            {isVariantOutOfStock ? (
-              <>
-                <PackageX className="w-4 h-4 text-rose-500" />
-                <span>{t("stock_out_of_stock")}</span>
-              </>
-            ) : isAdded ? (
+            {isAdded ? (
               <>
                 <Check className="w-4 h-4 animate-in zoom-in-75" />
                 <span>{t("detail_added")}!</span>
