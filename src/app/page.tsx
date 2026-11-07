@@ -358,7 +358,7 @@ export default function HomePage() {
                     {/* Price & Action Row */}
                     <div className="pt-3 px-1 flex justify-between items-end">
                       <div>
-                        <span className="text-[10px] text-neutral-400 block -mb-0.5">{t("home_wholesale")}</span>
+                        <span className="text-[10px] text-neutral-400 block -mb-0.5">{t("home_selling_price")}</span>
                         <span className="font-black text-sm text-neutral-900 tracking-tight">
                           ${Number(product.price).toFixed(2)}
                         </span>

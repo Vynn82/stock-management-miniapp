@@ -288,7 +288,7 @@ export default function ProductDetailPage({
             </div>
             <div className="text-right shrink-0">
               <span className="text-[10px] text-neutral-400 block mb-0.5">
-                {t("home_wholesale")}
+                {t("home_selling_price")}
               </span>
               <span className="text-2xl font-black text-neutral-900 tracking-tight">
                 ${activePrice.toFixed(2)}

@@ -113,10 +113,10 @@ function normalizeProduct(p: RawProduct): Product {
   );
 
   const price =
-    p.price !== undefined && p.price !== null
-      ? Number(p.price)
-      : p.sellingPrice !== undefined && p.sellingPrice !== null
+    p.sellingPrice !== undefined && p.sellingPrice !== null && !isNaN(Number(p.sellingPrice))
       ? Number(p.sellingPrice)
+      : p.price !== undefined && p.price !== null && !isNaN(Number(p.price))
+      ? Number(p.price)
       : 0;
 
   const variants = Array.isArray(p.variants)
@@ -127,10 +127,10 @@ function normalizeProduct(p: RawProduct): Product {
           0,
         );
         const vPrice =
-          v.price !== undefined && v.price !== null
-            ? Number(v.price)
-            : v.sellingPrice !== undefined && v.sellingPrice !== null
+          v.sellingPrice !== undefined && v.sellingPrice !== null && !isNaN(Number(v.sellingPrice))
             ? Number(v.sellingPrice)
+            : v.price !== undefined && v.price !== null && !isNaN(Number(v.price))
+            ? Number(v.price)
             : price;
 
         return {
@@ -139,6 +139,7 @@ function normalizeProduct(p: RawProduct): Product {
           name: v.name,
           sku: v.sku || null,
           price: vPrice,
+          sellingPrice: vPrice,
           image: v.image || null,
           stock: vTotalStock,
         };
@@ -150,6 +151,7 @@ function normalizeProduct(p: RawProduct): Product {
     code: p.code,
     name: p.name,
     price,
+    sellingPrice: price,
     image: p.image || null,
     images: Array.isArray(p.images) ? p.images : p.image ? [p.image] : [],
     description: p.description || '',
