@@ -9,6 +9,7 @@ import { useTelegram } from "@/context/telegram-context";
 import { useLanguage } from "@/context/language-context";
 import { api } from "@/lib/api";
 import { Category, Product } from "@/types";
+import { getProductDisplayImage } from "@/lib/image-utils";
 import { ProductImage } from "@/components/product-image";
 import { VariantSelectorSheet } from "@/components/variant-selector-sheet";
 import { OutOfStockModal } from "@/components/out-of-stock-modal";
@@ -76,13 +77,14 @@ function ProductsListContent() {
     }
 
     hapticFeedback("medium");
+    const displayImage = getProductDisplayImage(product);
     addToCart({
       productId: product.id,
       variantId: null,
       productName: product.name,
       productCode: product.code,
       price: Number(product.price),
-      image: product.image,
+      image: displayImage,
       maxStock: productStock,
     });
     setAddedId(product.id);
@@ -203,6 +205,7 @@ function ProductsListContent() {
               const isJustAdded = addedId === product.id;
               const hasVariants = product.variants && product.variants.length > 0;
               const isOutOfStock = (product.totalStock ?? 0) <= 0;
+              const displayImage = getProductDisplayImage(product);
 
               return (
                 <Link
@@ -222,7 +225,7 @@ function ProductsListContent() {
                       )}
 
                       <ProductImage
-                        src={product.image}
+                        src={displayImage}
                         alt={product.name}
                         className={`w-full h-full object-contain group-hover:scale-[1.04] transition-transform duration-500 ease-out ${
                           isOutOfStock ? "opacity-60 saturate-50" : ""

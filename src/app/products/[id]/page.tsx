@@ -19,6 +19,7 @@ import { useTelegram } from "@/context/telegram-context";
 import { useLanguage } from "@/context/language-context";
 import { api } from "@/lib/api";
 import { Product, ProductVariant } from "@/types";
+import { getVariantDisplayImage, getProductDisplayImage } from "@/lib/image-utils";
 import { ProductImage } from "@/components/product-image";
 import { QuantityInput } from "@/components/quantity-input";
 import { OutOfStockModal } from "@/components/out-of-stock-modal";
@@ -134,7 +135,7 @@ export default function ProductDetailPage({
       : product.price,
   );
 
-  const activeImage = selectedVariant?.image || product.image;
+  const activeImage = getVariantDisplayImage(product, selectedVariant);
 
   const handleAddToCart = () => {
     if (isOutOfStock) {
@@ -252,7 +253,7 @@ export default function ProductDetailPage({
 
       {/* Main Image Showcase Stage */}
       <div className="px-4 pt-4">
-        <div className="mx-auto w-full max-w-[520px] h-[340px] sm:h-[420px] relative flex items-center justify-center bg-white rounded-[2rem] border border-neutral-200/70 p-6 overflow-hidden">
+        <div className="mx-auto w-full max-w-[520px] h-[340px] sm:h-[420px] relative flex items-center justify-center bg-white rounded-[2rem] border border-neutral-200/70 p-6 overflow-hidden shadow-xs">
           {/* Out of Stock Overlay Badge on Image */}
           {isOutOfStock && (
             <div className="absolute top-4 left-4 z-10 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-600/90 backdrop-blur-md text-white text-xs font-black shadow-md tracking-wide">
@@ -264,11 +265,44 @@ export default function ProductDetailPage({
           <ProductImage
             src={activeImage}
             alt={product.name}
-            className={`w-full h-full object-contain animate-in fade-in duration-300 ${
+            className={`w-full h-full object-contain transition-all duration-300 ${
               isOutOfStock ? "opacity-60 saturate-50" : ""
             }`}
           />
         </div>
+
+        {/* Variant Thumbnail Gallery Strip */}
+        {product.variants && product.variants.length > 1 && (
+          <div className="mx-auto w-full max-w-[520px] flex items-center justify-center gap-2 mt-3 overflow-x-auto py-1 px-1 no-scrollbar">
+            {product.variants.map((v) => {
+              const isSelected = selectedVariant?.id === v.id;
+              const vThumb = v.image || product.image;
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => handleSelectVariant(v)}
+                  className={`relative w-14 h-14 rounded-2xl p-1 bg-white border-2 transition-all active:scale-95 shrink-0 overflow-hidden flex items-center justify-center shadow-xs ${
+                    isSelected
+                      ? "border-blue-600 ring-2 ring-blue-600/20 scale-105"
+                      : "border-neutral-200/80 hover:border-neutral-300 opacity-80 hover:opacity-100"
+                  }`}
+                  aria-label={`Select ${v.name}`}
+                >
+                  <ProductImage
+                    src={vThumb}
+                    alt={v.name}
+                    className="w-full h-full object-contain"
+                    fallbackIconClassName="w-5 h-5 text-neutral-400 stroke-[1.5]"
+                  />
+                  {isSelected && (
+                    <div className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-blue-600 ring-1 ring-white" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="p-4 space-y-4 max-w-2xl w-full mx-auto">
@@ -320,11 +354,18 @@ export default function ProductDetailPage({
 
         {/* Variants Selector */}
         {product.variants && product.variants.length > 0 && (
-          <div className="bg-white p-4 rounded-3xl border border-neutral-200/80 space-y-3">
-            <label className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase block">
-              {t("detail_choose_variant")} ({product.variants.length})
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <div className="bg-white p-4 sm:p-5 rounded-3xl border border-neutral-200/80 space-y-3.5 shadow-xs">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase block">
+                {t("detail_choose_variant")} ({product.variants.length})
+              </label>
+              {selectedVariant && (
+                <span className="text-xs font-bold text-blue-600 truncate max-w-[180px]">
+                  {selectedVariant.name}
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {product.variants.map((v) => {
                 const isSelected = selectedVariant?.id === v.id;
                 const vStock = Number(v.stock ?? 0);
@@ -334,49 +375,74 @@ export default function ProductDetailPage({
                     ? v.price
                     : product.price || 0,
                 );
+                const vThumb = v.image || product.image;
 
                 return (
                   <button
                     key={v.id}
                     type="button"
                     onClick={() => handleSelectVariant(v)}
-                    className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] flex flex-col justify-between gap-1.5 ${
+                    className={`p-2.5 sm:p-3 rounded-2xl border text-left transition-all active:scale-[0.98] flex items-center gap-3 ${
                       isSelected
-                        ? "border-blue-600 bg-blue-50/80 shadow-xs ring-2 ring-blue-600/20"
-                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300"
+                        ? "border-blue-600 bg-blue-50/70 shadow-xs ring-2 ring-blue-600/20"
+                        : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50/50"
                     } ${vOutOfStock ? "opacity-75 bg-neutral-50/60" : ""}`}
                   >
-                    <div className="flex items-start justify-between gap-1.5">
-                      <span
-                        className={`text-xs font-bold leading-tight ${
-                          isSelected ? "text-blue-950 font-extrabold" : "text-neutral-800"
-                        }`}
-                      >
-                        {v.name}
-                      </span>
-                      {isSelected && (
-                        <div className="w-3.5 h-3.5 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
-                          <Check className="w-2 h-2 stroke-[3]" />
-                        </div>
-                      )}
+                    {/* Variant Thumbnail */}
+                    <div
+                      className={`w-12 h-12 rounded-xl border p-1 shrink-0 overflow-hidden flex items-center justify-center transition-all ${
+                        isSelected
+                          ? "bg-white border-blue-200 shadow-xs"
+                          : "bg-[#f5f5f7] border-neutral-200/80"
+                      }`}
+                    >
+                      <ProductImage
+                        src={vThumb}
+                        alt={v.name}
+                        className="w-full h-full object-contain"
+                        fallbackIconClassName="w-5 h-5 text-neutral-400 stroke-[1.5]"
+                      />
                     </div>
-                    <div className="flex items-center justify-between pt-0.5">
-                      <span
-                        className={`text-xs font-black tracking-tight ${
-                          isSelected ? "text-blue-700" : "text-neutral-900"
-                        }`}
-                      >
-                        ${vPrice.toFixed(2)}
-                      </span>
-                      <span
-                        className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${
-                          vOutOfStock
-                            ? "bg-rose-100 text-rose-700 font-bold"
-                            : "text-neutral-500 bg-neutral-100"
-                        }`}
-                      >
-                        {vOutOfStock ? t("stock_out_of_stock") : `${vStock}`}
-                      </span>
+
+                    {/* Variant Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span
+                          className={`text-xs font-bold leading-tight truncate ${
+                            isSelected
+                              ? "text-blue-950 font-extrabold"
+                              : "text-neutral-800"
+                          }`}
+                        >
+                          {v.name}
+                        </span>
+                        {isSelected && (
+                          <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-1 mt-1">
+                        <span
+                          className={`text-xs font-black tracking-tight ${
+                            isSelected ? "text-blue-700" : "text-neutral-900"
+                          }`}
+                        >
+                          ${vPrice.toFixed(2)}
+                        </span>
+                        <span
+                          className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md ${
+                            vOutOfStock
+                              ? "bg-rose-100 text-rose-700 font-bold"
+                              : "text-neutral-500 bg-neutral-100"
+                          }`}
+                        >
+                          {vOutOfStock
+                            ? t("stock_out_of_stock")
+                            : `${vStock} ${t("stock_available")}`}
+                        </span>
+                      </div>
                     </div>
                   </button>
                 );

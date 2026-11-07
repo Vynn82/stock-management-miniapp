@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Check, ShoppingCart, Plus, Minus, Layers } from "lucide-react";
 import { Product, ProductVariant, CartItem } from "@/types";
+import { getVariantDisplayImage } from "@/lib/image-utils";
 import { ProductImage } from "./product-image";
 import { QuantityInput } from "./quantity-input";
 import { OutOfStockModal } from "./out-of-stock-modal";
@@ -90,7 +91,7 @@ export function VariantSelectorSheet({
       : product.price || 0,
   );
 
-  const activeImage = selectedVariant?.image || product.image;
+  const activeImage = getVariantDisplayImage(product, selectedVariant);
   const subtotal = activePrice * quantity;
 
   const handleConfirmAdd = () => {
@@ -222,52 +223,74 @@ export function VariantSelectorSheet({
                       ? v.price
                       : product.price || 0,
                   );
+                  const vThumb = v.image || product.image;
 
                   return (
                     <button
                       key={v.id}
                       type="button"
                       onClick={() => handleSelectVariant(v)}
-                      className={`p-3 rounded-2xl border text-left transition-all active:scale-[0.98] flex flex-col justify-between gap-1.5 ${
+                      className={`p-2.5 sm:p-3 rounded-2xl border text-left transition-all active:scale-[0.98] flex items-center gap-3 ${
                         isSelected
                           ? "border-blue-600 bg-blue-50/70 shadow-xs ring-2 ring-blue-600/20"
-                          : "border-neutral-200 hover:border-neutral-300 bg-white"
+                          : "border-neutral-200 hover:border-neutral-300 bg-white hover:bg-neutral-50/50"
                       } ${vOutOfStock ? "opacity-75 bg-neutral-50/60" : ""}`}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <span
-                          className={`text-xs font-bold leading-tight ${
-                            isSelected ? "text-blue-950 font-extrabold" : "text-neutral-800"
-                          }`}
-                        >
-                          {v.name}
-                        </span>
-                        {isSelected && (
-                          <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
-                            <Check className="w-2.5 h-2.5 stroke-[3]" />
-                          </div>
-                        )}
+                      {/* Variant Thumbnail */}
+                      <div
+                        className={`w-12 h-12 rounded-xl border p-1 shrink-0 overflow-hidden flex items-center justify-center transition-all ${
+                          isSelected
+                            ? "bg-white border-blue-200 shadow-xs"
+                            : "bg-[#f5f5f7] border-neutral-200/80"
+                        }`}
+                      >
+                        <ProductImage
+                          src={vThumb}
+                          alt={v.name}
+                          className="w-full h-full object-contain"
+                          fallbackIconClassName="w-5 h-5 text-neutral-400 stroke-[1.5]"
+                        />
                       </div>
 
-                      <div className="flex items-center justify-between pt-1">
-                        <span
-                          className={`text-xs font-black tracking-tight ${
-                            isSelected ? "text-blue-700" : "text-neutral-900"
-                          }`}
-                        >
-                          ${vPrice.toFixed(2)}
-                        </span>
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                            vOutOfStock
-                              ? "bg-rose-100 text-rose-700 font-bold"
-                              : "text-neutral-500 bg-neutral-100"
-                          }`}
-                        >
-                          {vOutOfStock
-                            ? t("stock_out_of_stock")
-                            : `${vStock} ${t("stock_available")}`}
-                        </span>
+                      {/* Variant Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1.5">
+                          <span
+                            className={`text-xs font-bold leading-tight truncate ${
+                              isSelected
+                                ? "text-blue-950 font-extrabold"
+                                : "text-neutral-800"
+                            }`}
+                          >
+                            {v.name}
+                          </span>
+                          {isSelected && (
+                            <div className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0">
+                              <Check className="w-2.5 h-2.5 stroke-[3]" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between gap-1 mt-1">
+                          <span
+                            className={`text-xs font-black tracking-tight ${
+                              isSelected ? "text-blue-700" : "text-neutral-900"
+                            }`}
+                          >
+                            ${vPrice.toFixed(2)}
+                          </span>
+                          <span
+                            className={`text-[9px] font-semibold px-2 py-0.5 rounded-full ${
+                              vOutOfStock
+                                ? "bg-rose-100 text-rose-700 font-bold"
+                                : "text-neutral-500 bg-neutral-100"
+                            }`}
+                          >
+                            {vOutOfStock
+                              ? t("stock_out_of_stock")
+                              : `${vStock} ${t("stock_available")}`}
+                          </span>
+                        </div>
                       </div>
                     </button>
                   );
