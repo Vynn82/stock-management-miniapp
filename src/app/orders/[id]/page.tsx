@@ -23,6 +23,7 @@ import {
   FileText,
   Phone,
 } from 'lucide-react';
+import { ProductImage } from '@/components/product-image';
 import { OrderDetailSkeleton } from '@/components/order-detail-skeleton';
 import { useLanguage } from '@/context/language-context';
 import { useTelegram } from '@/context/telegram-context';
@@ -617,48 +618,62 @@ export default function OrderDetailPage({
               const hasItemDiscount = origP > unitP || (item.discountPercent !== undefined && item.discountPercent > 0);
               const lineTotal = Number((unitP * reqQty).toFixed(2));
               const lineOriginalTotal = Number((origP * reqQty).toFixed(2));
+              const itemImage =
+                item.variant?.image ||
+                item.product?.image ||
+                (Array.isArray(item.product?.images) ? item.product.images[0] : null) ||
+                null;
 
               return (
-                <div key={item.id} className="py-2.5 space-y-1">
-                  <div className="flex justify-between items-start text-xs">
-                    <div className="pr-2">
-                      <h3 className="font-bold text-gray-900">{item.product?.name}</h3>
+                <div key={item.id} className="py-3 flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Product / Variant Thumbnail */}
+                    <div className="w-14 h-14 rounded-2xl bg-neutral-50 border border-neutral-100 overflow-hidden flex items-center justify-center shrink-0 p-1.5">
+                      <ProductImage
+                        src={itemImage}
+                        alt={item.product?.name || "Product"}
+                        className="w-full h-full object-contain"
+                        fallbackIconClassName="w-6 h-6 text-neutral-300 stroke-[1.5]"
+                      />
+                    </div>
+
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-gray-900 truncate text-[13px] leading-snug">
+                        {item.product?.name || "Product"}
+                      </h3>
                       {item.variant && (
-                        <span className="text-[11px] text-blue-600 font-medium block">
+                        <span className="text-[11px] text-blue-600 font-medium block truncate mt-0.5">
                           Variant: {item.variant.name}
                         </span>
                       )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      {hasItemDiscount && origP > unitP && (
-                        <span className="text-[10px] text-gray-400 line-through block">
-                          ${lineOriginalTotal.toFixed(2)}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-gray-500 text-[11px] font-medium">
+                          Qty: <b className="text-gray-800">{reqQty}</b> &times; ${unitP.toFixed(2)}
                         </span>
-                      )}
-                      <span className="font-extrabold text-gray-900">
-                        ${lineTotal.toFixed(2)}
-                      </span>
+                        {item.discountPercent !== undefined && item.discountPercent > 0 && (
+                          <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                            -{item.discountPercent}%
+                          </span>
+                        )}
+                        {Number(item.waitingQuantity) > 0 && (
+                          <span className="bg-amber-50 text-amber-700 border border-amber-200/80 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                            Waiting: {Number(item.waitingQuantity)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Quantity Breakdown Pills */}
-                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] pt-1">
-                    <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-700 font-medium">
-                      Requested: <b>{Number(item.requestedQuantity)}</b>
-                    </span>
-                    <span className="bg-emerald-50 px-2 py-0.5 rounded text-emerald-800 font-medium">
-                      Approved: <b>{Number(item.approvedQuantity || 0)}</b>
-                    </span>
-                    {Number(item.waitingQuantity) > 0 && (
-                      <span className="bg-amber-50 px-2 py-0.5 rounded text-amber-800 font-medium">
-                        Waiting: <b>{Number(item.waitingQuantity)}</b>
+                  {/* Line Total */}
+                  <div className="text-right shrink-0">
+                    {hasItemDiscount && origP > unitP && (
+                      <span className="text-[10px] text-gray-400 line-through block">
+                        ${lineOriginalTotal.toFixed(2)}
                       </span>
                     )}
-                    {item.discountPercent !== undefined && item.discountPercent > 0 && (
-                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                        -{item.discountPercent}%
-                      </span>
-                    )}
+                    <span className="font-extrabold text-sm text-gray-900 tracking-tight">
+                      ${lineTotal.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               );

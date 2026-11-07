@@ -89,6 +89,7 @@ export interface CustomerOrderItem {
     name: string;
     code: string;
     image?: string | null;
+    images?: string[];
   };
   variant?: {
     id: string;
