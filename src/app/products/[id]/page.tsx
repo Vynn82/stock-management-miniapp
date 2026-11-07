@@ -19,7 +19,7 @@ import { useTelegram } from "@/context/telegram-context";
 import { useLanguage } from "@/context/language-context";
 import { api } from "@/lib/api";
 import { Product, ProductVariant } from "@/types";
-import { getVariantDisplayImage, getProductDisplayImage } from "@/lib/image-utils";
+import { getVariantDisplayImage } from "@/lib/image-utils";
 import { ProductImage } from "@/components/product-image";
 import { QuantityInput } from "@/components/quantity-input";
 import { OutOfStockModal } from "@/components/out-of-stock-modal";
