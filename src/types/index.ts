@@ -5,6 +5,7 @@ export interface ProductVariant {
   sku?: string | null;
   price?: number | null;
   sellingPrice?: number | null;
+  costPrice?: number | null;
   image?: string | null;
   stock?: number;
 }
@@ -15,6 +16,8 @@ export interface Product {
   name: string;
   price: number;
   sellingPrice?: number | null;
+  costPrice?: number | null;
+  hasVariants?: boolean;
   image?: string | null;
   images?: string[];
   description?: string;

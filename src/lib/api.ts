@@ -71,6 +71,7 @@ interface RawVariant {
   sku?: string | null;
   price?: number | string | null;
   sellingPrice?: number | string | null;
+  costPrice?: number | string | null;
   image?: string | null;
   stocks?: RawStock[];
 }
@@ -81,6 +82,8 @@ interface RawProduct {
   name: string;
   price?: number | string | null;
   sellingPrice?: number | string | null;
+  costPrice?: number | string | null;
+  hasVariants?: boolean;
   image?: string | null;
   images?: string[];
   description?: string | null;
@@ -112,39 +115,70 @@ function normalizeProduct(p: RawProduct): Product {
     0,
   );
 
-  const price =
-    p.sellingPrice !== undefined && p.sellingPrice !== null && !isNaN(Number(p.sellingPrice))
-      ? Number(p.sellingPrice)
-      : p.price !== undefined && p.price !== null && !isNaN(Number(p.price))
-      ? Number(p.price)
-      : 0;
+  const rawVariants = Array.isArray(p.variants) ? p.variants : [];
 
-  const variants = Array.isArray(p.variants)
-    ? p.variants.map((v: RawVariant) => {
-        const vStocks = Array.isArray(v.stocks) ? v.stocks : [];
-        const vTotalStock = vStocks.reduce(
-          (sum: number, s: RawStock) => sum + (Number(s.quantity) || 0),
-          0,
-        );
-        const vPrice =
-          v.sellingPrice !== undefined && v.sellingPrice !== null && !isNaN(Number(v.sellingPrice))
-            ? Number(v.sellingPrice)
-            : v.price !== undefined && v.price !== null && !isNaN(Number(v.price))
-            ? Number(v.price)
-            : price;
+  // Helper to extract a positive number from a field
+  const toPositiveNum = (val: unknown): number => {
+    if (val === undefined || val === null) return 0;
+    const n = Number(val);
+    return !isNaN(n) && n > 0 ? n : 0;
+  };
 
-        return {
-          id: v.id,
-          code: v.code,
-          name: v.name,
-          sku: v.sku || null,
-          price: vPrice,
-          sellingPrice: vPrice,
-          image: v.image || null,
-          stock: vTotalStock,
-        };
-      })
-    : [];
+  // Base product price
+  let basePrice = toPositiveNum(p.sellingPrice) || toPositiveNum(p.price);
+
+  // Collect positive variant selling prices
+  const variantPrices: number[] = [];
+  for (const v of rawVariants) {
+    const vp = toPositiveNum(v.sellingPrice) || toPositiveNum(v.price);
+    if (vp > 0) {
+      variantPrices.push(vp);
+    }
+  }
+
+  // If basePrice is 0 (or if product has variants), derive from variants if available
+  if (variantPrices.length > 0 && (basePrice <= 0 || p.hasVariants)) {
+    basePrice = Math.min(...variantPrices);
+  }
+
+  // If still 0, check costPrice fallbacks
+  if (basePrice <= 0) {
+    const variantCostPrices = rawVariants
+      .map((v) => toPositiveNum(v.costPrice))
+      .filter((cp) => cp > 0);
+    if (variantCostPrices.length > 0) {
+      basePrice = Math.min(...variantCostPrices);
+    } else {
+      basePrice = toPositiveNum(p.costPrice);
+    }
+  }
+
+  const variants = rawVariants.map((v: RawVariant) => {
+    const vStocks = Array.isArray(v.stocks) ? v.stocks : [];
+    const vTotalStock = vStocks.reduce(
+      (sum: number, s: RawStock) => sum + (Number(s.quantity) || 0),
+      0,
+    );
+    const vPrice =
+      toPositiveNum(v.sellingPrice) ||
+      toPositiveNum(v.price) ||
+      basePrice ||
+      toPositiveNum(v.costPrice);
+
+    return {
+      id: v.id,
+      code: v.code,
+      name: v.name,
+      sku: v.sku || null,
+      price: vPrice,
+      sellingPrice: vPrice,
+      costPrice: toPositiveNum(v.costPrice) || null,
+      image: v.image || null,
+      stock: vTotalStock,
+    };
+  });
+
+  const price = basePrice;
 
   return {
     id: p.id,
@@ -152,6 +186,8 @@ function normalizeProduct(p: RawProduct): Product {
     name: p.name,
     price,
     sellingPrice: price,
+    costPrice: toPositiveNum(p.costPrice) || null,
+    hasVariants: Boolean(p.hasVariants || variants.length > 0),
     image: p.image || null,
     images: Array.isArray(p.images) ? p.images : p.image ? [p.image] : [],
     description: p.description || '',
